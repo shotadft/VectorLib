@@ -53,25 +53,29 @@ class Position(Generic[T]): # type: ignore
 
     @property
     def x(self) -> Number:
-        return self._coords[0] if self._coords.dtype == int else float(self._coords[0])
+        v = self._coords[0]
+        return int(v) if self._coords.dtype == int else float(v)
 
     @property
     def y(self) -> Number:
         if self._coords.size <= 1:
             raise AttributeError("y is not defined for this dimension")
-        return self._coords[1] if self._coords.dtype == int else float(self._coords[1])
+        v = self._coords[1]
+        return int(v) if self._coords.dtype == int else float(v)
 
     @property
     def z(self) -> Number:
         if self._coords.size <= 2:
             raise AttributeError("z is not defined for this dimension")
-        return self._coords[2] if self._coords.dtype == int else float(self._coords[2])
+        v = self._coords[2]
+        return int(v) if self._coords.dtype == int else float(v)
 
     @property
     def w(self) -> Number:
         if self._coords.size <= 3:
             raise AttributeError("w is not defined for this dimension")
-        return self._coords[3] if self._coords.dtype == int else float(self._coords[3])
+        v = self._coords[3]
+        return int(v) if self._coords.dtype == int else float(v)
 
     def __getitem__(self, key: Literal["x", "y", "z", "w"]) -> Number:
         names: Tuple[str, ...] = ("x", "y", "z", "w")
@@ -81,17 +85,17 @@ class Position(Generic[T]): # type: ignore
         if self._coords.size <= idx:
             raise KeyError(f"'{key}' is not defined for this dimension")
         v = self._coords[idx]
-        return v if self._coords.dtype == int else float(v)
+        return int(v) if self._coords.dtype == int else float(v)
 
     @property
     def ndim(self) -> int:
         return self._coords.size
 
     def to_list(self) -> List[Number]:
-        return self._coords.tolist()
+        return [int(v) if self._coords.dtype == int else float(v) for v in self._coords]
 
     def to_tuple(self) -> Tuple[Number, ...]:
-        return tuple(self._coords.tolist())
+        return tuple(int(v) if self._coords.dtype == int else float(v) for v in self._coords)
 
     def is_zero(self) -> bool:
         return bool(_is_zero(self._coords))

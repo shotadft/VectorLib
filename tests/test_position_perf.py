@@ -33,9 +33,9 @@ def test_position_performance():
 
 def test_massive_position_generation():
     random.seed(0xfa92023bc)
-    N = 10_000
+    N = 1_000_000
     size = 256
-    sleep_interval = 0.5  # 秒
+    sleep_interval = 0.5
     next_sleep = time.perf_counter() + sleep_interval
     sleep_total = 0.0
     t0 = time.perf_counter()

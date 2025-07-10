@@ -1,13 +1,24 @@
-from typing import Union, List, Tuple, TypeVar, Generic, Sequence, Literal
-from numba import njit
+from typing import Union, List, Tuple, TypeVar, Generic, Sequence, Literal, Final
+from numba import njit, prange
 
 Number = Union[float, int]
 T = TypeVar("T", bound=Number)
 
 try:
-    import cupy as np  # type: ignore
+    import cupy as xp  # type: ignore
 except ImportError:
-    import numpy as np
+    import numpy as xp
+
+_DEF_INT_KIND: Final = ("i",)
+
+
+def _is_int_dtype(arr) -> bool:
+    return getattr(arr, "dtype", None) is not None and arr.dtype.kind in _DEF_INT_KIND
+
+
+def _as_number(v, is_int: bool) -> Number:
+    return int(v) if is_int else float(v)
+
 
 def _validate_args(args: tuple, name: str) -> None:
     """引数のバリデーション（共通処理）"""
@@ -19,34 +30,79 @@ def _validate_args(args: tuple, name: str) -> None:
                 f"Argument {i} must be int or float, got {type(v).__name__}"
             )
 
+
 @njit(cache=True)
-def _norm(arr: np.ndarray) -> float:
+def _norm_numba(arr):
     s = 0.0
     for v in arr:
         s += v * v
     return s**0.5
 
+
 @njit(cache=True)
-def _is_zero(arr: np.ndarray) -> bool:
+def _is_zero_numba(arr):
     for v in arr:
         if v != 0:
             return False
     return True
 
-class Position(Generic[T]): # type: ignore
+
+def _norm(arr) -> float:
+    if hasattr(arr, "dtype") and arr.__class__.__module__.startswith("numpy"):
+        return _norm_numba(arr)
+    else:
+        return float((arr * arr).sum() ** 0.5)
+
+
+def _is_zero(arr) -> bool:
+    if hasattr(arr, "dtype") and arr.__class__.__module__.startswith("numpy"):
+        return _is_zero_numba(arr)
+    else:
+        return bool((arr == 0).all())
+
+
+@njit(cache=True, parallel=True, fastmath=True)
+def batch_norm(arrs: xp.ndarray) -> xp.ndarray:
+    # arrs: (N, D)
+    N = arrs.shape[0]
+    out = xp.empty(N, dtype=xp.float64)
+    for i in prange(N):
+        s = 0.0
+        for v in arrs[i]:
+            s += v * v
+        out[i] = s ** 0.5
+    return out
+
+@njit(cache=True, parallel=True, fastmath=True)
+def batch_is_zero(arrs: xp.ndarray) -> xp.ndarray:
+    # arrs: (N, D)
+    N = arrs.shape[0]
+    out = xp.empty(N, dtype=xp.bool_)
+    for i in prange(N):
+        is_zero = True
+        for v in arrs[i]:
+            if v != 0:
+                is_zero = False
+                break
+        out[i] = is_zero
+    return out
+
+
+class Position(Generic[T]):  # type: ignore
     def __init__(self, *args: T) -> None:
         _validate_args(args, "Position")
         dtype = float if any(isinstance(a, float) for a in args) else int
-        arr = np.array(args, dtype=dtype)
+        arr = xp.array(args, dtype=dtype)
         arr.setflags(write=False)
-        self._coords: np.ndarray = arr
+        self._coords: xp.ndarray = arr
         self._locked: bool = True
+        self._is_int: bool = _is_int_dtype(arr)
 
     def __setattr__(self, name, value):
         if (
             hasattr(self, "_locked")
             and self._locked
-            and name not in {"_coords", "_locked"}
+            and name not in {"_coords", "_locked", "_is_int"}
         ):
             raise AttributeError("Position is immutable")
         super().__setattr__(name, value)
@@ -54,48 +110,48 @@ class Position(Generic[T]): # type: ignore
     @property
     def x(self) -> Number:
         v = self._coords[0]
-        return int(v) if self._coords.dtype == int else float(v)
+        return _as_number(v, self._is_int)
 
     @property
     def y(self) -> Number:
         if self._coords.size <= 1:
             raise AttributeError("y is not defined for this dimension")
         v = self._coords[1]
-        return int(v) if self._coords.dtype == int else float(v)
+        return _as_number(v, self._is_int)
 
     @property
     def z(self) -> Number:
         if self._coords.size <= 2:
             raise AttributeError("z is not defined for this dimension")
         v = self._coords[2]
-        return int(v) if self._coords.dtype == int else float(v)
+        return _as_number(v, self._is_int)
 
     @property
     def w(self) -> Number:
         if self._coords.size <= 3:
             raise AttributeError("w is not defined for this dimension")
         v = self._coords[3]
-        return int(v) if self._coords.dtype == int else float(v)
+        return _as_number(v, self._is_int)
 
     def __getitem__(self, key: Literal["x", "y", "z", "w"]) -> Number:
         names: Tuple[str, ...] = ("x", "y", "z", "w")
-        if key not in names:
-            raise KeyError(f"Invalid coordinate name: {key}")
         idx = names.index(key)
         if self._coords.size <= idx:
             raise KeyError(f"'{key}' is not defined for this dimension")
         v = self._coords[idx]
-        return int(v) if self._coords.dtype == int else float(v)
+        return _as_number(v, self._is_int)
 
     @property
     def ndim(self) -> int:
         return self._coords.size
 
     def to_list(self) -> List[Number]:
-        return [int(v) if self._coords.dtype == int else float(v) for v in self._coords]
+        is_int = self._is_int
+        return [_as_number(v, is_int) for v in self._coords]
 
     def to_tuple(self) -> Tuple[Number, ...]:
-        return tuple(int(v) if self._coords.dtype == int else float(v) for v in self._coords)
+        is_int = self._is_int
+        return tuple(_as_number(v, is_int) for v in self._coords)
 
     def is_zero(self) -> bool:
         return bool(_is_zero(self._coords))

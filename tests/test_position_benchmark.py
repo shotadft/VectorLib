@@ -1,13 +1,8 @@
 import random
 import time
-import pytest
-import sys
-import os
 import statistics
 from typing import List
 from dataclasses import dataclass
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from package.positionlib.position import Position
 
 @dataclass

@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "VectorLib"
+version = "1.0.0"
+description = "This is a library that enables vector calculations in Python."
+authors = [
+  { name = "Shotadft", email = "98450322+shotadft@users.noreply.github.com" }
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+  "numpy>=1.26.0,<2.3",
+  "numba>=0.61.2"
+]
+license = {file = "LICENSE.md"}
+keywords = [
+  "vector", "math", "numpy", "cupy", "numba", "linear algebra", "gpu", "coordinates", "scientific computing"
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "Typing :: Typed",
+  "License :: OSI Approved :: MIT License"
+]
+
+[project.urls]
+Repository = "https://github.com/shotadft/VectorLib"
+Homepage = "https://github.com/shotadft/VectorLib"
+Issues = "https://github.com/shotadft/VectorLib/issues"
+
+[project.optional-dependencies]
+cupy = ["cupy>=10.0"]
+
+[tool.setuptools.packages.find]
+where = ["package"]
+
+[tool.setuptools.package-data]
+"package" = ["py.typed"] 

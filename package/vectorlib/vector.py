@@ -68,3 +68,24 @@ class Vector(Generic[T]): # type: ignore
 
     def __repr__(self) -> str:
         return f"Vector({self.to_list()})"
+
+    def __getitem__(self, idx: int) -> Number:
+        v = self._vec[idx]
+        return v if self._vec.dtype == int else float(v)
+
+    def __len__(self) -> int:
+        return self._vec.size
+
+    def __iter__(self):
+        return iter(self._vec.tolist())
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Vector):
+            return False
+        return (self._vec == other._vec).all()
+
+    def __mul__(self, scalar: Number) -> "Vector[float]":
+        return Vector[float]((self._vec * scalar).tolist())
+
+    def __rmul__(self, scalar: Number) -> "Vector[float]":
+        return self.__mul__(scalar)

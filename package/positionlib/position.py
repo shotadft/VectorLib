@@ -1,4 +1,4 @@
-from typing import Union, List, Tuple, TypeVar, Generic
+from typing import Union, List, Tuple, TypeVar, Generic, Sequence, Literal
 from numba import njit
 
 Number = Union[float, int]
@@ -39,8 +39,8 @@ class Position(Generic[T]): # type: ignore
         dtype = float if any(isinstance(a, float) for a in args) else int
         arr = np.array(args, dtype=dtype)
         arr.setflags(write=False)
-        self._coords = arr
-        self._locked = True
+        self._coords: np.ndarray = arr
+        self._locked: bool = True
 
     def __setattr__(self, name, value):
         if (
@@ -51,27 +51,37 @@ class Position(Generic[T]): # type: ignore
             raise AttributeError("Position is immutable")
         super().__setattr__(name, value)
 
-    def _get_coord(self, index: int, name: str) -> Number:
-        """座標取得の共通処理"""
-        if self._coords.size <= index:
-            raise AttributeError(f"{name} is not defined for this dimension")
-        return self._coords[index]
-
     @property
     def x(self) -> Number:
-        return self._coords[0]
+        return self._coords[0] if self._coords.dtype == int else float(self._coords[0])
 
     @property
     def y(self) -> Number:
-        return self._get_coord(1, "y")
+        if self._coords.size <= 1:
+            raise AttributeError("y is not defined for this dimension")
+        return self._coords[1] if self._coords.dtype == int else float(self._coords[1])
 
     @property
     def z(self) -> Number:
-        return self._get_coord(2, "z")
+        if self._coords.size <= 2:
+            raise AttributeError("z is not defined for this dimension")
+        return self._coords[2] if self._coords.dtype == int else float(self._coords[2])
 
     @property
     def w(self) -> Number:
-        return self._get_coord(3, "w")
+        if self._coords.size <= 3:
+            raise AttributeError("w is not defined for this dimension")
+        return self._coords[3] if self._coords.dtype == int else float(self._coords[3])
+
+    def __getitem__(self, key: Literal["x", "y", "z", "w"]) -> Number:
+        names: Tuple[str, ...] = ("x", "y", "z", "w")
+        if key not in names:
+            raise KeyError(f"Invalid coordinate name: {key}")
+        idx = names.index(key)
+        if self._coords.size <= idx:
+            raise KeyError(f"'{key}' is not defined for this dimension")
+        v = self._coords[idx]
+        return v if self._coords.dtype == int else float(v)
 
     @property
     def ndim(self) -> int:

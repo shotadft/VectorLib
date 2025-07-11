@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from package.positionlib.position import Position
 from package.vectorlib.vector import Vec2
 
-def draw_vector_and_export(radius: int, pos: tuple[int, int], outdir: str = "") -> str:
+def draw_vector(radius: int, pos: tuple[int, int], outdir: str = "") -> str:
     if not outdir:
         outdir = os.path.expanduser("~/Desktop")
     fig, ax = plt.subplots()
@@ -22,12 +22,15 @@ def draw_vector_and_export(radius: int, pos: tuple[int, int], outdir: str = "") 
 
 if __name__ == "__main__":
     try:
-        radius = int(input("グリッド半径を0〜255で指定してください: "))
-        if not (0 <= radius <= 255):
+        MAX_RADIUS = 256
+        radius = int(input(f"グリッド半径を0~{MAX_RADIUS}で指定してください: "))
+        if not (0 <= radius <= MAX_RADIUS):
             raise ValueError
-        x = int(input("座標xを整数で指定してください: "))
-        y = int(input("座標yを整数で指定してください: "))
-        out = draw_vector_and_export(radius, (x, y))
+        x = int(input(f"x(整数: 0~{radius - 1}): "))
+        y = int(input(f"y(整数: 0~{radius - 1}): "))
+
+        print(f"({x}, {y})")
+        out = draw_vector(radius, (x, y))
         print(f"Exported: {out}")
     except Exception as e:
         print(f"入力エラー: {e}")

@@ -6,16 +6,16 @@
 [![App Version][version-shield]][header-id]
 
 ## Overview
-This is a example description<br/>
+**Python用のベクトル型と色々を追加するだけの汎用的なライブラリです。**<br/>
+***This is a library that enables vector calculations in Python.***<br/>
 
 ## Requirement
-View [requirements.txt](https://github.com/shotadft/VectorLib/blob/master/requirements.txt)!
-
+View to [requirements.txt](https://github.com/shotadft/VectorLib/blob/master/requirements.txt)
 ### Optional
 - CuPy (Version is Any)
 
 ## Development Environments
-- Cursor (FREE Plan)
+- Cursor (FREE Plan)<br/>
 **⚠️当プログラムは一部に生成AIを使用して開発されています。⚠️**
 
 ## Installations

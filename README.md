@@ -9,12 +9,29 @@
 This is a example description<br/>
 
 ## Requirement
+View [requirements.txt](https://github.com/shotadft/VectorLib/blob/master/requirements.txt)!
+
+### Optional
+- CuPy (Version is Any)
 
 ## Development Environments
+- Cursor (FREE Plan)
+**⚠️当プログラムは一部に生成AIを使用して開発されています。⚠️**
+
+## Installations
 
 ## Usage
+- **`Position`**: 座標管理クラス
+- **`Vector`**: 基本ベクトルクラス
+    - **`Vec2` `Vec3` `Vec4`**: n次元特化クラス
+        - Positionオブジェクトまたは数値で初期化可能。
 
 ## Features
+- 型安全な2次元・3次元・4次元ベクトルクラス（Vec2, Vec3, Vec4）
+- 座標管理が楽
+- 安全なベクトル操作
+- 距離・ノルム・正規化・内積・外積・射影・反射などの基本演算をサポート
+- シンプルで直感的なAPI
 
 ## Author Links
 - [Twitter](https://x.com/shotadft)

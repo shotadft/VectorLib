@@ -80,28 +80,24 @@ def test_position_creation_benchmark():
     """Position作成のベンチマーク"""
     benchmark = PositionBenchmark(seed=42)
     
-    # 1次元Position作成
     benchmark.run_benchmark(
         "1D Position Creation",
         100_000,
         lambda: Position(random.randint(0, 1000))
     )
     
-    # 2次元Position作成
     benchmark.run_benchmark(
         "2D Position Creation",
         100_000,
         lambda: Position(random.randint(0, 1000), random.randint(0, 1000))
     )
     
-    # 3次元Position作成
     benchmark.run_benchmark(
         "3D Position Creation",
         100_000,
         lambda: Position(random.randint(0, 1000), random.randint(0, 1000), random.randint(0, 1000))
     )
     
-    # 4次元Position作成
     benchmark.run_benchmark(
         "4D Position Creation",
         100_000,
@@ -115,40 +111,34 @@ def test_position_property_benchmark():
     """Positionプロパティアクセスのベンチマーク"""
     benchmark = PositionBenchmark(seed=42)
     
-    # テスト用Positionを作成
     pos_2d = Position(100, 200)
     pos_3d = Position(100, 200, 300)
     pos_4d = Position(100, 200, 300, 400)
     
-    # xプロパティアクセス
     benchmark.run_benchmark(
         "X Property Access",
         1_000_000,
         lambda: pos_2d.x
     )
     
-    # yプロパティアクセス
     benchmark.run_benchmark(
         "Y Property Access",
         1_000_000,
         lambda: pos_2d.y
     )
     
-    # zプロパティアクセス（3D）
     benchmark.run_benchmark(
         "Z Property Access (3D)",
         1_000_000,
         lambda: pos_3d.z
     )
     
-    # wプロパティアクセス（4D）
     benchmark.run_benchmark(
         "W Property Access (4D)",
         1_000_000,
         lambda: pos_4d.w
     )
     
-    # ndimプロパティアクセス
     benchmark.run_benchmark(
         "NDim Property Access",
         1_000_000,
@@ -161,7 +151,6 @@ def test_position_method_benchmark():
     """Positionメソッドのベンチマーク"""
     benchmark = PositionBenchmark(seed=42)
     
-    # テスト用Positionを作成
     positions = [
         Position(0, 0),  # zero vector
         Position(3, 4),  # 3-4-5 triangle
@@ -169,7 +158,6 @@ def test_position_method_benchmark():
         Position(1, 1, 1, 1),  # 4D unit cube
     ]
     
-    # is_zero()メソッド
     for i, pos in enumerate(positions):
         benchmark.run_benchmark(
             f"is_zero() - {pos.ndim}D",
@@ -177,7 +165,6 @@ def test_position_method_benchmark():
             lambda p=pos: p.is_zero()
         )
     
-    # to_list()メソッド
     for i, pos in enumerate(positions):
         benchmark.run_benchmark(
             f"to_list() - {pos.ndim}D",
@@ -185,7 +172,6 @@ def test_position_method_benchmark():
             lambda p=pos: p.to_list()
         )
     
-    # to_tuple()メソッド
     for i, pos in enumerate(positions):
         benchmark.run_benchmark(
             f"to_tuple() - {pos.ndim}D",
@@ -193,7 +179,6 @@ def test_position_method_benchmark():
             lambda p=pos: p.to_tuple()
         )
     
-    # normalize()メソッド（非ゼロベクトルのみ）
     non_zero_positions = [pos for pos in positions if not pos.is_zero()]
     for i, pos in enumerate(non_zero_positions):
         benchmark.run_benchmark(
@@ -208,12 +193,10 @@ def test_position_bulk_operations_benchmark():
     """Positionの一括操作のベンチマーク"""
     benchmark = PositionBenchmark(seed=42)
     
-    # 大量のPositionを作成
     size = 1000
     coords_2d = [(random.randint(0, 255), random.randint(0, 255)) for _ in range(size)]
     coords_3d = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(size)]
     
-    # 一括作成
     benchmark.run_benchmark(
         "Bulk 2D Position Creation",
         size,
@@ -226,11 +209,9 @@ def test_position_bulk_operations_benchmark():
         lambda: [Position(x, y, z) for x, y, z in coords_3d]
     )
     
-    # 作成済みPositionでの一括操作
     positions_2d = [Position(x, y) for x, y in coords_2d]
     positions_3d = [Position(x, y, z) for x, y, z in coords_3d]
     
-    # 一括is_zero判定
     benchmark.run_benchmark(
         "Bulk is_zero() - 2D",
         size,
@@ -243,7 +224,6 @@ def test_position_bulk_operations_benchmark():
         lambda: [p.is_zero() for p in positions_3d]
     )
     
-    # 一括正規化（非ゼロベクトルのみ）
     non_zero_2d = [p for p in positions_2d if not p.is_zero()]
     non_zero_3d = [p for p in positions_3d if not p.is_zero()]
     
@@ -277,11 +257,9 @@ def test_position_memory_benchmark():
     
     benchmark = PositionBenchmark(seed=42)
     
-    # メモリ使用量の測定
     gc.collect()
     initial_memory = get_memory_usage()
     
-    # 大量のPositionを作成
     positions = []
     for _ in range(100_000):
         positions.append(Position(random.randint(0, 255), random.randint(0, 255)))
@@ -296,7 +274,6 @@ def test_position_memory_benchmark():
     print(f"Memory Used: {memory_used:.2f} MB")
     print(f"Memory per Position: {memory_used * 1024 * 1024 / 100_000:.2f} bytes")
     
-    # メモリクリーンアップ
     del positions
     gc.collect()
 
@@ -304,7 +281,6 @@ def test_position_comparison_benchmark():
     """Positionの比較操作のベンチマーク"""
     benchmark = PositionBenchmark(seed=42)
     
-    # 比較用のPositionを作成
     positions = [
         Position(0, 0),
         Position(1, 1),
@@ -313,21 +289,18 @@ def test_position_comparison_benchmark():
         Position(5, 12),
     ]
     
-    # 等価性比較
     benchmark.run_benchmark(
         "Equality Comparison",
         100_000,
         lambda: positions[0] == positions[1]
     )
     
-    # 文字列表現生成
     benchmark.run_benchmark(
         "String Representation",
         100_000,
         lambda: str(positions[0])
     )
     
-    # リスト変換
     benchmark.run_benchmark(
         "List Conversion",
         100_000,
@@ -337,7 +310,6 @@ def test_position_comparison_benchmark():
     benchmark.print_results()
 
 if __name__ == "__main__":
-    # 個別テストの実行
     print("Running Position Benchmark Tests...")
     
     test_position_creation_benchmark()
@@ -351,4 +323,4 @@ if __name__ == "__main__":
     except ImportError:
         print("psutil not available, skipping memory benchmark")
     
-    print("\nAll benchmark tests completed!") 
+    print("\nAll benchmark tests completed!")

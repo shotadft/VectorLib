@@ -1,13 +1,27 @@
 # 標準ライブラリ
-from typing import Final, Generic, Iterator, List, Literal, Sequence, Tuple, TypeVar, Union
+from typing import (
+    Final,
+    Generic,
+    Iterator,
+    List,
+    Literal,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 # サードパーティライブラリ
 from numba import njit, prange
 
 try:
     import cupy as xp  # type: ignore
+
+    _USE_CUPY = True
 except ImportError:
     import numpy as xp
+
+    _USE_CUPY = False
 
 # 型定義
 Number = Union[float, int]
@@ -52,14 +66,14 @@ def _is_zero_fast(arr) -> bool:
 
 
 def _norm(arr) -> float:
-    if hasattr(arr, "dtype") and arr.__class__.__module__.startswith("numpy"):
+    if not _USE_CUPY and hasattr(arr, "dtype"):
         return _norm_fast(arr)
     else:
         return float((arr * arr).sum() ** 0.5)
 
 
 def _is_zero(arr) -> bool:
-    if hasattr(arr, "dtype") and arr.__class__.__module__.startswith("numpy"):
+    if not _USE_CUPY and hasattr(arr, "dtype"):
         return _is_zero_fast(arr)
     else:
         return bool((arr == 0).all())
@@ -67,19 +81,18 @@ def _is_zero(arr) -> bool:
 
 @njit(cache=True, parallel=True, fastmath=True)
 def batch_norm(arrs: xp.ndarray) -> xp.ndarray:
-    # arrs: (N, D)
     N = arrs.shape[0]
     out = xp.empty(N, dtype=xp.float64)
     for i in prange(N):
         s = 0.0
         for v in arrs[i]:
             s += v * v
-        out[i] = s ** 0.5
+        out[i] = s**0.5
     return out
+
 
 @njit(cache=True, parallel=True, fastmath=True)
 def batch_is_zero(arrs: xp.ndarray) -> xp.ndarray:
-    # arrs: (N, D)
     N = arrs.shape[0]
     out = xp.empty(N, dtype=xp.bool_)
     for i in prange(N):
@@ -92,7 +105,7 @@ def batch_is_zero(arrs: xp.ndarray) -> xp.ndarray:
     return out
 
 
-class Position(Generic[T]):  # type: ignore
+class Position(Generic[T]):
     def __init__(self, *args: T):
         _validate(args, "Position")
         dtype = float if any(isinstance(a, float) for a in args) else int

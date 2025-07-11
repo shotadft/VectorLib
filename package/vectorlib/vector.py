@@ -6,8 +6,15 @@ from numba import njit, prange
 
 try:
     import cupy as xp  # type: ignore
+
+    _USE_CUPY = True
 except ImportError:
     import numpy as xp
+
+    _USE_CUPY = False
+
+# ローカルモジュール
+from ..positionlib.position import Position
 
 # 型定義
 Number = Union[float, int]
@@ -50,7 +57,9 @@ def _angle_cosine(dot: float, norm1: float, norm2: float) -> float:
     return xp.acos(xp.clip(cos_theta, -1.0, 1.0))
 
 
-def _reflect_vector(incident: "Vector", normal: "Vector", dot_product: float) -> "Vector":
+def _reflect_vector(
+    incident: "Vector", normal: "Vector", dot_product: float
+) -> "Vector":
     """反射ベクトルを計算"""
     return incident - normal * 2 * dot_product
 
@@ -60,10 +69,14 @@ def _project_vector(normal: "Vector", dot_product: float) -> "Vector":
     return normal * dot_product
 
 
-def _reflect_coords(coords: Sequence[Number], normal_coords: Sequence[Number], dot_product: float) -> List[float]:
+def _reflect_coords(
+    coords: Sequence[Number], normal_coords: Sequence[Number], dot_product: float
+) -> List[float]:
     """反射座標を計算"""
-    return [_calc_reflection(coord, dot_product, n_coord) 
-            for coord, n_coord in zip(coords, normal_coords)]
+    return [
+        _calc_reflection(coord, dot_product, n_coord)
+        for coord, n_coord in zip(coords, normal_coords)
+    ]
 
 
 def _project_coords(normal_coords: Sequence[Number], dot_product: float) -> List[float]:
@@ -85,11 +98,7 @@ def _norm_fast(arr) -> float:
 
 
 def _norm(arr) -> float:
-    if (
-        hasattr(arr, "dtype")
-        and hasattr(arr, "sum")
-        and arr.__class__.__module__.startswith("numpy")
-    ):
+    if not _USE_CUPY and hasattr(arr, "dtype") and hasattr(arr, "sum"):
         return _norm_fast(arr)
     else:
         return float((arr * arr).sum() ** 0.5)
@@ -104,7 +113,7 @@ def _dot_fast(a, b) -> float:
 
 
 def _dot(a, b) -> float:
-    if hasattr(a, "dtype") and a.__class__.__module__.startswith("numpy"):
+    if not _USE_CUPY and hasattr(a, "dtype"):
         return _dot_fast(a, b)
     else:
         return float((a * b).sum())
@@ -112,19 +121,18 @@ def _dot(a, b) -> float:
 
 @njit(cache=True, parallel=True, fastmath=True)
 def batch_norm(arrs: xp.ndarray) -> xp.ndarray:
-    # arrs: (N, D)
     N = arrs.shape[0]
     out = xp.empty(N, dtype=xp.float64)
     for i in prange(N):
         s = 0.0
         for v in arrs[i]:
             s += v * v
-        out[i] = s ** 0.5
+        out[i] = s**0.5
     return out
+
 
 @njit(cache=True, parallel=True, fastmath=True)
 def batch_dot(arrs1: xp.ndarray, arrs2: xp.ndarray) -> xp.ndarray:
-    # arrs1, arrs2: (N, D)
     N = arrs1.shape[0]
     out = xp.empty(N, dtype=xp.float64)
     for i in prange(N):
@@ -135,18 +143,19 @@ def batch_dot(arrs1: xp.ndarray, arrs2: xp.ndarray) -> xp.ndarray:
     return out
 
 
-class Vector(Generic[T]):  # type: ignore
-    def __init__(self, data: Sequence[T]):
+class Vector(Generic[T]):
+    def __init__(self, data: Union[Sequence[T], Position[T]]):
+        if isinstance(data, Position):
+            data = data.to_tuple()  # type: ignore
+
         if not 1 <= len(data) <= _MAX_VECTOR_LENGTH:
             raise ValueError(f"Vector length must be 1 to {_MAX_VECTOR_LENGTH}")
-        
-        # 型判定と配列作成をまとめて実行
+
         has_float = any(isinstance(x, float) for x in data)
         dtype = float if has_float else int
         arr = xp.array(data, dtype=dtype)
         arr.setflags(write=False)
-        
-        # インスタンス変数をまとめて設定
+
         self._vec, self._locked, self._is_int = arr, True, _is_int(arr)
 
     def _create_instance(self, data: Sequence[Number]) -> "Vector[float]":
@@ -316,8 +325,13 @@ def _calc_project_coords(self, other: "Vector[T]") -> List[float]:
 
 
 class Vec2(Vector[T]):
-    def __init__(self, x: T, y: T):
-        super().__init__([x, y])
+    def __init__(self, x: Union[T, Position[T]], y: T):
+        if isinstance(x, Position):
+            if len(x) != 2:
+                raise ValueError
+            super().__init__(x)
+        else:
+            super().__init__([x, y])
 
     def _create_instance(self, data: Sequence[Number]) -> "Vec2[float]":
         return Vec2[float](data[0], data[1])
@@ -352,8 +366,13 @@ class Vec2(Vector[T]):
 
 
 class Vec3(Vector[T]):
-    def __init__(self, x: T, y: T, z: T):
-        super().__init__([x, y, z])
+    def __init__(self, x: Union[T, Position[T]], y: T, z: T):
+        if isinstance(x, Position):
+            if len(x) != 3:
+                raise ValueError
+            super().__init__(x)
+        else:
+            super().__init__([x, y, z])
 
     def _create_instance(self, data: Sequence[Number]) -> "Vec3[float]":
         return Vec3[float](data[0], data[1], data[2])
@@ -378,7 +397,9 @@ class Vec3(Vector[T]):
 
     def angle(self, other: "Vec3[T]") -> float:
         dot = self.x * other.x + self.y * other.y + self.z * other.z
-        norm1, norm2 = xp.sqrt(self.x**2 + self.y**2 + self.z**2), xp.sqrt(other.x**2 + other.y**2 + other.z**2)
+        norm1, norm2 = xp.sqrt(self.x**2 + self.y**2 + self.z**2), xp.sqrt(
+            other.x**2 + other.y**2 + other.z**2
+        )
         return _angle_cosine(dot, norm1, norm2)
 
     def inverse(self) -> "Vec3[float]":
@@ -395,8 +416,13 @@ class Vec3(Vector[T]):
 
 
 class Vec4(Vector[T]):
-    def __init__(self, x: T, y: T, z: T, w: T):
-        super().__init__([x, y, z, w])
+    def __init__(self, x: Union[T, Position[T]], y: T, z: T, w: T):
+        if isinstance(x, Position):
+            if len(x) != 4:
+                raise ValueError
+            super().__init__(x)
+        else:
+            super().__init__([x, y, z, w])
 
     def _create_instance(self, data: Sequence[Number]) -> "Vec4[float]":
         return Vec4[float](data[0], data[1], data[2], data[3])

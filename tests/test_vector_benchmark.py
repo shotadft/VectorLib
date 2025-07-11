@@ -50,4 +50,4 @@ def test_vector_norm(benchmark):
 @pytest.mark.benchmark(group="vector_normalize")
 def test_vector_normalize(benchmark):
     v = Vector([i+1 for i in range(100)])
-    benchmark(v.normalize) 
+    benchmark(v.normalize)

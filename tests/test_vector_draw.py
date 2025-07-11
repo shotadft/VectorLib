@@ -30,4 +30,4 @@ if __name__ == "__main__":
         out = draw_vector_and_export(radius, (x, y))
         print(f"Exported: {out}")
     except Exception as e:
-        print(f"入力エラー: {e}") 
+        print(f"入力エラー: {e}")

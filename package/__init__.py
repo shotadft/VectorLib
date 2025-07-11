@@ -8,4 +8,4 @@ VectorLib パッケージ
 # ローカルモジュール
 from . import positionlib, vectorlib
 
-__all__ = ["positionlib", "vectorlib"] 
+__all__ = ["positionlib", "vectorlib"]

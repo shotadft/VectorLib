@@ -4,17 +4,21 @@ from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 (for 3D projection)
 from package.positionlib.position import Position
 from package.vectorlib.vector import Vec3
 
-def draw_vector3d(radius: int, pos: tuple[int, int, int], outdir: str = "") -> str:
+def draw_vector3d(radius: int, pos: Position[int], outdir: str = "") -> str:
     if not outdir:
         outdir = os.path.expanduser("~/Desktop")
+    
+    # PositionからVec3を作成
+    vec = Vec3(pos.x, pos.y, pos.z)
+    
     fig = plt.figure()
     ax = Axes3D(fig)
     fig.add_axes(ax)
 
     ax.grid(True)
-    ax.quiver(0, 0, 0, pos[0], pos[1], pos[2], color='r', arrow_length_ratio=0.1)
+    ax.quiver(0, 0, 0, vec.x, vec.y, vec.z, color='r', arrow_length_ratio=0.1)
     ax.scatter(0, 0, 0, color='k', marker='o')
-    ax.scatter(pos[0], pos[1], pos[2], color='k', marker='o')
+    ax.scatter(vec.x, vec.y, vec.z, color='k', marker='o')
 
     ax.set_xlim(-radius, radius)
     ax.set_ylim(-radius, radius)
@@ -29,7 +33,7 @@ def draw_vector3d(radius: int, pos: tuple[int, int, int], outdir: str = "") -> s
     
     plt.show()
 
-    outpath = os.path.join(outdir, f"vector3d_r{radius}_({pos[0]},{pos[1]},{pos[2]}).png")
+    outpath = os.path.join(outdir, f"vector3d_r{radius}_({vec.x},{vec.y},{vec.z}).png")
     fig.savefig(outpath)
     plt.close(fig)
 
@@ -45,8 +49,9 @@ if __name__ == "__main__":
         y = int(input(f"y(整数: 0~{radius - 1}): "))
         z = int(input(f"z(整数: 0~{radius - 1}): "))
 
-        print(f"({x}, {y}, {z})")
-        out = draw_vector3d(radius, (x, y, z))
+        pos = Position(x, y, z)
+        print(f"Position: {pos}")
+        out = draw_vector3d(radius, pos)
         print(f"Exported: {out}")
     except Exception as e:
         print(f"入力エラー: {e}")

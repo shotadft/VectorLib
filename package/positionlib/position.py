@@ -9,6 +9,7 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    cast,
 )
 
 # サードパーティライブラリ
@@ -79,32 +80,6 @@ def _is_zero(arr) -> bool:
         return bool((arr == 0).all())
 
 
-@njit(cache=True, parallel=True, fastmath=True)
-def batch_norm(arrs: xp.ndarray) -> xp.ndarray:
-    N = arrs.shape[0]
-    out = xp.empty(N, dtype=xp.float64)
-    for i in prange(N):
-        s = 0.0
-        for v in arrs[i]:
-            s += v * v
-        out[i] = s**0.5
-    return out
-
-
-@njit(cache=True, parallel=True, fastmath=True)
-def batch_is_zero(arrs: xp.ndarray) -> xp.ndarray:
-    N = arrs.shape[0]
-    out = xp.empty(N, dtype=xp.bool_)
-    for i in prange(N):
-        is_zero = True
-        for v in arrs[i]:
-            if v != 0:
-                is_zero = False
-                break
-        out[i] = is_zero
-    return out
-
-
 class Position(Generic[T]):
     def __init__(self, *args: T):
         _validate(args, "Position")
@@ -127,64 +102,100 @@ class Position(Generic[T]):
     def __len__(self) -> int:
         return self._coords.size
 
-    def __iter__(self) -> Iterator[Number]:
+    def __iter__(self) -> Iterator[T]:
         is_int = self._is_int
+        target_type = int if is_int else float
         for v in self._coords:
-            yield _to_number(v, is_int)
+            if target_type == int:
+                yield cast(T, int(v))
+            else:
+                yield cast(T, float(v))
 
-    def __getitem__(self, key) -> Number:
+    def __getitem__(self, key) -> T:
         names: Tuple[str, ...] = ("x", "y", "z", "w")
         if isinstance(key, int):
             if key < 0 or key >= self._coords.size:
                 raise IndexError("Position index out of range")
             v = self._coords[key]
-            return _to_number(v, self._is_int)
+            target_type = int if self._is_int else float
+            if target_type == int:
+                return cast(T, int(v))
+            else:
+                return cast(T, float(v))
         elif isinstance(key, str):
             idx = names.index(key)
             if self._coords.size <= idx:
                 raise KeyError(f"'{key}' is not defined for this dimension")
             v = self._coords[idx]
-            return _to_number(v, self._is_int)
+            target_type = int if self._is_int else float
+            if target_type == int:
+                return cast(T, int(v))
+            else:
+                return cast(T, float(v))
         else:
             raise TypeError("Key must be int or one of 'x', 'y', 'z', 'w'")
 
     @property
-    def x(self) -> Number:
+    def x(self) -> T:
         v = self._coords[0]
-        return _to_number(v, self._is_int)
+        target_type = int if self._is_int else float
+        if target_type == int:
+            return cast(T, int(v))
+        else:
+            return cast(T, float(v))
 
     @property
-    def y(self) -> Number:
+    def y(self) -> T:
         if self._coords.size <= 1:
             raise IndexError("y is not defined for this dimension")
         v = self._coords[1]
-        return _to_number(v, self._is_int)
+        target_type = int if self._is_int else float
+        if target_type == int:
+            return cast(T, int(v))
+        else:
+            return cast(T, float(v))
 
     @property
-    def z(self) -> Number:
+    def z(self) -> T:
         if self._coords.size <= 2:
             raise IndexError("z is not defined for this dimension")
         v = self._coords[2]
-        return _to_number(v, self._is_int)
+        target_type = int if self._is_int else float
+        if target_type == int:
+            return cast(T, int(v))
+        else:
+            return cast(T, float(v))
 
     @property
-    def w(self) -> Number:
+    def w(self) -> T:
         if self._coords.size <= 3:
             raise IndexError("w is not defined for this dimension")
         v = self._coords[3]
-        return _to_number(v, self._is_int)
+        target_type = int if self._is_int else float
+        if target_type == int:
+            return cast(T, int(v))
+        else:
+            return cast(T, float(v))
 
     @property
     def ndim(self) -> int:
         return self._coords.size
 
-    def to_list(self) -> List[Number]:
+    def to_list(self) -> List[T]:
         is_int = self._is_int
-        return [_to_number(v, is_int) for v in self._coords]
+        target_type = int if is_int else float
+        if target_type == int:
+            return [cast(T, int(v)) for v in self._coords]
+        else:
+            return [cast(T, float(v)) for v in self._coords]
 
-    def to_tuple(self) -> Tuple[Number, ...]:
+    def to_tuple(self) -> Tuple[T, ...]:
         is_int = self._is_int
-        return tuple(_to_number(v, is_int) for v in self._coords)
+        target_type = int if is_int else float
+        if target_type == int:
+            return tuple(cast(T, int(v)) for v in self._coords)
+        else:
+            return tuple(cast(T, float(v)) for v in self._coords)
 
     def is_zero(self) -> bool:
         return bool(_is_zero(self._coords))

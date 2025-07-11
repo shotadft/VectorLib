@@ -3,20 +3,19 @@ import matplotlib.pyplot as plt
 from package.positionlib.position import Position
 from package.vectorlib.vector import Vec2
 
-def draw_vector_and_export(radius: int, pos: tuple[int, int], outdir: str = "./") -> str:
-    p = Position(*pos)
-    v = Vec2(0, 0)
-    arrow = Vec2(int(p.x), int(p.y)) - v
-    fig, ax = plt.subplots(figsize=(6, 6))
+def draw_vector_and_export(radius: int, pos: tuple[int, int], outdir: str = "") -> str:
+    if not outdir:
+        outdir = os.path.expanduser("~/Desktop")
+    fig, ax = plt.subplots()
+    ax.grid(True)
+    ax.plot([0, pos[0]], [0, pos[1]], marker="o")
+    ax.arrow(0, 0, pos[0], pos[1], head_width=0.2, head_length=0.3, fc="r", ec="r")
+    ax.set_xticks(range(-radius, radius + 1))
+    ax.set_yticks(range(-radius, radius + 1))
     ax.set_xlim(-radius, radius)
     ax.set_ylim(-radius, radius)
-    ax.set_aspect('equal')
-    ax.grid(True, which='both', linestyle='--', color='gray', alpha=0.5)
-    ax.plot(0, 0, 'ko')
-    ax.arrow(0, 0, arrow[0], arrow[1], head_width=radius*0.05, head_length=radius*0.08, fc='r', ec='r', length_includes_head=True)
-    ax.set_xticks(range(-radius, radius+1, max(1, radius//8)))
-    ax.set_yticks(range(-radius, radius+1, max(1, radius//8)))
-    outpath = os.path.join(outdir, f'vector_draw_r{radius}_x{pos[0]}_y{pos[1]}.png')
+    plt.show()
+    outpath = os.path.join(outdir, f"vector_r{radius}_({pos[0]},{pos[1]}).png")
     fig.savefig(outpath)
     plt.close(fig)
     return outpath

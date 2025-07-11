@@ -1,27 +1,83 @@
-from typing import Union, List, Tuple, TypeVar, Generic, Sequence, Final
-from numba import njit, prange
+# 標準ライブラリ
+from typing import Final, Generic, Iterator, List, Sequence, Tuple, TypeVar, Union
 
-Number = Union[float, int]
-T = TypeVar("T", bound=Number)
+# サードパーティライブラリ
+from numba import njit, prange
 
 try:
     import cupy as xp  # type: ignore
 except ImportError:
     import numpy as xp
 
+# 型定義
+Number = Union[float, int]
+T = TypeVar("T", bound=Number)
+
+# 型関連定数
 _DEF_INT_KIND: Final = ("i",)
 
+# 数値計算定数
+_DEFAULT_TOLERANCE: Final = 1e-8
+_MAX_VECTOR_LENGTH: Final = 1024
 
-def _is_int_dtype(arr) -> bool:
+
+def _is_int(arr) -> bool:
     return getattr(arr, "dtype", None) is not None and arr.dtype.kind in _DEF_INT_KIND
 
 
-def _as_number(v, is_int: bool) -> Number:
+def _to_number(v, is_int: bool) -> Number:
     return int(v) if is_int else float(v)
 
 
+def _calc_reflection(a: Number, b: Number, c: Number, factor: Number = 2) -> float:
+    """反射計算: a - b * factor * c"""
+    return float(a - b * factor * c)
+
+
+def _calc_projection(a: Number, b: Number) -> float:
+    """投影計算: a * b"""
+    return float(a * b)
+
+
+def _calc_inverse(a: Number) -> float:
+    """逆ベクトル計算: -a"""
+    return float(-a)
+
+
+def _angle_cosine(dot: float, norm1: float, norm2: float) -> float:
+    """角度計算のためのcosine値を計算"""
+    cos_theta = dot / (norm1 * norm2)
+    return xp.acos(xp.clip(cos_theta, -1.0, 1.0))
+
+
+def _reflect_vector(incident: "Vector", normal: "Vector", dot_product: float) -> "Vector":
+    """反射ベクトルを計算"""
+    return incident - normal * 2 * dot_product
+
+
+def _project_vector(normal: "Vector", dot_product: float) -> "Vector":
+    """投影ベクトルを計算"""
+    return normal * dot_product
+
+
+def _reflect_coords(coords: Sequence[Number], normal_coords: Sequence[Number], dot_product: float) -> List[float]:
+    """反射座標を計算"""
+    return [_calc_reflection(coord, dot_product, n_coord) 
+            for coord, n_coord in zip(coords, normal_coords)]
+
+
+def _project_coords(normal_coords: Sequence[Number], dot_product: float) -> List[float]:
+    """投影座標を計算"""
+    return [_calc_projection(n_coord, dot_product) for n_coord in normal_coords]
+
+
+def _inverse_coords(coords: Sequence[Number]) -> List[float]:
+    """逆ベクトル座標を計算"""
+    return [_calc_inverse(coord) for coord in coords]
+
+
 @njit(cache=True, parallel=True, fastmath=True)
-def _norm_numba(arr):
+def _norm_fast(arr) -> float:
     s = 0.0
     for i in prange(arr.size):
         s += arr[i] * arr[i]
@@ -34,13 +90,13 @@ def _norm(arr) -> float:
         and hasattr(arr, "sum")
         and arr.__class__.__module__.startswith("numpy")
     ):
-        return _norm_numba(arr)
+        return _norm_fast(arr)
     else:
         return float((arr * arr).sum() ** 0.5)
 
 
 @njit(cache=True, parallel=True, fastmath=True)
-def _dot_numba(a, b):
+def _dot_fast(a, b) -> float:
     s = 0.0
     for i in prange(a.size):
         s += a[i] * b[i]
@@ -49,7 +105,7 @@ def _dot_numba(a, b):
 
 def _dot(a, b) -> float:
     if hasattr(a, "dtype") and a.__class__.__module__.startswith("numpy"):
-        return _dot_numba(a, b)
+        return _dot_fast(a, b)
     else:
         return float((a * b).sum())
 
@@ -80,15 +136,33 @@ def batch_dot(arrs1: xp.ndarray, arrs2: xp.ndarray) -> xp.ndarray:
 
 
 class Vector(Generic[T]):  # type: ignore
-    def __init__(self, data: Sequence[T]) -> None:
-        if not 1 <= len(data) <= 1024:
-            raise ValueError("Vector length must be 1 to 1024")
-        dtype = float if any(isinstance(x, float) for x in data) else int
+    def __init__(self, data: Sequence[T]):
+        if not 1 <= len(data) <= _MAX_VECTOR_LENGTH:
+            raise ValueError(f"Vector length must be 1 to {_MAX_VECTOR_LENGTH}")
+        
+        # 型判定と配列作成をまとめて実行
+        has_float = any(isinstance(x, float) for x in data)
+        dtype = float if has_float else int
         arr = xp.array(data, dtype=dtype)
         arr.setflags(write=False)
-        self._vec = arr
-        self._locked = True
-        self._is_int = _is_int_dtype(arr)
+        
+        # インスタンス変数をまとめて設定
+        self._vec, self._locked, self._is_int = arr, True, _is_int(arr)
+
+    def _create_instance(self, data: Sequence[Number]) -> "Vector[float]":
+        """新しいVectorインスタンスを作成するファクトリーメソッド"""
+        return Vector[float](data)
+
+    def _get_coord(self, index: int) -> Number:
+        """指定されたインデックスの座標を取得"""
+        if index < 0 or index >= self._vec.size:
+            raise IndexError(f"Coordinate index {index} out of range")
+        v = self._vec[index]
+        return _to_number(v, self._is_int)
+
+    def _from_array(self, arr: xp.ndarray) -> "Vector[float]":
+        """配列から新しいVectorインスタンスを作成"""
+        return self._create_instance(arr.tolist())
 
     def __setattr__(self, name, value):
         if (
@@ -104,12 +178,10 @@ class Vector(Generic[T]):  # type: ignore
         return self._vec.size
 
     def to_list(self) -> List[Number]:
-        is_int = self._is_int
-        return [_as_number(v, is_int) for v in self._vec]
+        return [_to_number(v, self._is_int) for v in self._vec]
 
     def to_tuple(self) -> Tuple[Number, ...]:
-        is_int = self._is_int
-        return tuple(_as_number(v, is_int) for v in self._vec)
+        return tuple(_to_number(v, self._is_int) for v in self._vec)
 
     def norm(self) -> float:
         return _norm(self._vec)
@@ -118,30 +190,30 @@ class Vector(Generic[T]):  # type: ignore
         n = self.norm()
         if n == 0:
             raise ValueError("Cannot normalize zero vector")
-        return Vector[float]((self._vec / n).tolist())
+        return self._from_array(self._vec / n)
 
     def dot(self, other: "Vector[T]") -> float:
         return _dot(self._vec, other._vec)
 
-    def __add__(self, other: "Vector[T]") -> "Vector[T]":
-        return Vector((self._vec + other._vec).tolist())
+    def __add__(self, other: "Vector[T]") -> "Vector[float]":
+        return self._create_instance((self._vec + other._vec).tolist())
 
-    def __sub__(self, other: "Vector[T]") -> "Vector[T]":
-        return Vector((self._vec - other._vec).tolist())
+    def __sub__(self, other: "Vector[T]") -> "Vector[float]":
+        return self._create_instance((self._vec - other._vec).tolist())
 
     def __repr__(self) -> str:
-        return f"Vector({self.to_list()})"
+        return f"{self.__class__.__name__}({self.to_list()})"
 
     def __getitem__(self, idx: int) -> Number:
         v = self._vec[idx]
-        return _as_number(v, self._is_int)
+        return _to_number(v, self._is_int)
 
     def __len__(self) -> int:
         return self._vec.size
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Number]:
         is_int = self._is_int
-        return (_as_number(v, is_int) for v in self._vec)
+        return (_to_number(v, is_int) for v in self._vec)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Vector):
@@ -161,166 +233,142 @@ class Vector(Generic[T]):  # type: ignore
     def manhattan(self, other: "Vector[T]") -> Number:
         diff = abs(self._vec - other._vec)
         s = diff.sum()
-        return _as_number(s, self._is_int)
+        return _to_number(s, self._is_int)
 
     def lerp(self, other: "Vector[T]", t: float) -> "Vector[float]":
-        return Vector[float]((self._vec * (1 - t) + other._vec * t).tolist())
+        return self._from_array(self._vec * (1 - t) + other._vec * t)
 
-    def clamp(self, min_val: Number, max_val: Number) -> "Vector[T]":
+    def clamp(self, min_val: Number, max_val: Number) -> "Vector[float]":
         arr = xp.clip(self._vec, min_val, max_val)
-        return Vector[T](arr.tolist())
+        return self._from_array(arr)
 
-    def abs(self) -> "Vector[T]":
+    def abs(self) -> "Vector[float]":
         arr = xp.abs(self._vec)
-        return Vector[T](arr.tolist())
+        return self._from_array(arr)
 
     def sum(self) -> Number:
         s = self._vec.sum()
-        return _as_number(s, self._is_int)
+        return _to_number(s, self._is_int)
 
     def prod(self) -> Number:
         p = self._vec.prod()
-        return _as_number(p, self._is_int)
+        return _to_number(p, self._is_int)
 
     def min(self) -> Number:
         m = self._vec.min()
-        return _as_number(m, self._is_int)
+        return _to_number(m, self._is_int)
 
     def max(self) -> Number:
         m = self._vec.max()
-        return _as_number(m, self._is_int)
+        return _to_number(m, self._is_int)
 
-    def is_unit(self, tol: float = 1e-8) -> bool:
+    def is_unit(self, tol: float = _DEFAULT_TOLERANCE) -> bool:
         return abs(self.norm() - 1.0) < tol
 
     def inverse(self) -> "Vector[float]":
-        return Vector[float]((-self._vec).tolist())
+        return self._from_array(-self._vec)
 
     def astype(self, dtype: type) -> "Vector[float]":
         arr = self._vec.astype(dtype)
-        return Vector[float](arr.tolist())
+        return self._from_array(arr)
 
     def reflect(self, normal: "Vector[T]") -> "Vector[float]":
-        s = self.astype(float)
-        n = normal.normalize()
+        s, n = self.astype(float), normal.normalize()
         d = s.dot(n)
-        return (s - n * 2 * d).normalize() * s.norm()
+        return _reflect_vector(s, n, d).normalize() * s.norm()
 
     def project(self, other: "Vector[T]") -> "Vector[float]":
-        s = self.astype(float)
-        n = other.normalize()
+        s, n = self.astype(float), other.normalize()
         d = s.dot(n)
-        return n * d
+        return _project_vector(n, d)
 
     def angle_between(self, other: "Vector[T]") -> float:
-        dot = self.dot(other)
-        norm1 = self.norm()
-        norm2 = other.norm()
-        cos_theta = dot / (norm1 * norm2)
-        return xp.acos(xp.clip(cos_theta, -1.0, 1.0))
+        dot, norm1, norm2 = self.dot(other), self.norm(), other.norm()
+        return _angle_cosine(dot, norm1, norm2)
+
+
+def _get_coord_property(self, index: int) -> Number:
+    """共通の座標プロパティ取得ヘルパー"""
+    return self._get_coord(index)
+
+
+def _calc_inverse_coords(self) -> List[float]:
+    """共通の逆ベクトル座標計算ヘルパー"""
+    coords = [self._get_coord(i) for i in range(self._vec.size)]
+    return _inverse_coords(coords)
+
+
+def _calc_reflect_coords(self, normal: "Vector[T]") -> List[float]:
+    """共通の反射ベクトル座標計算ヘルパー"""
+    n_vec = normal.normalize()
+    n_coords = [n_vec[i] for i in range(self._vec.size)]
+    d = sum(self._get_coord(i) * n_coords[i] for i in range(self._vec.size))
+    coords = [self._get_coord(i) for i in range(self._vec.size)]
+    return _reflect_coords(coords, n_coords, d)
+
+
+def _calc_project_coords(self, other: "Vector[T]") -> List[float]:
+    """共通の投影ベクトル座標計算ヘルパー"""
+    n_vec = other.normalize()
+    n_coords = [n_vec[i] for i in range(self._vec.size)]
+    d = sum(self._get_coord(i) * n_coords[i] for i in range(self._vec.size))
+    return _project_coords(n_coords, d)
 
 
 class Vec2(Vector[T]):
-    def __init__(self, x: T, y: T) -> None:
+    def __init__(self, x: T, y: T):
         super().__init__([x, y])
+
+    def _create_instance(self, data: Sequence[Number]) -> "Vec2[float]":
+        return Vec2[float](data[0], data[1])
 
     @property
     def x(self) -> Number:
-        v = self._vec[0]
-        return _as_number(v, self._is_int)
+        return _get_coord_property(self, 0)
 
     @property
     def y(self) -> Number:
-        v = self._vec[1]
-        return _as_number(v, self._is_int)
+        return _get_coord_property(self, 1)
 
     def cross(self, other: "Vec2[T]") -> Number:
         return self.x * other.y - self.y * other.x
 
     def angle(self, other: "Vec2[T]") -> float:
         dot = self.x * other.x + self.y * other.y
-        norm1 = xp.sqrt(self.x**2 + self.y**2)
-        norm2 = xp.sqrt(other.x**2 + other.y**2)
-        cos_theta = dot / (norm1 * norm2)
-        return xp.acos(xp.clip(cos_theta, -1.0, 1.0))
-
-    def distance(self, other: "Vec2[T]") -> float:  # type: ignore[override]
-        return super().distance(other)
-
-    def manhattan(self, other: "Vec2[T]") -> Number:  # type: ignore[override]
-        return super().manhattan(other)
-
-    def lerp(self, other: "Vec2[T]", t: float) -> "Vec2[float]":  # type: ignore[override]
-        return Vec2[float](
-            float(self.x * (1 - t) + other.x * t), float(self.y * (1 - t) + other.y * t)
-        )
-
-    def clamp(self, min_val: Number, max_val: Number) -> "Vec2[float]":  # type: ignore[override]
-        arr = xp.clip(self._vec, min_val, max_val)
-        return Vec2[float](float(arr[0]), float(arr[1]))
-
-    def abs(self) -> "Vec2[float]":  # type: ignore[override]
-        arr = xp.abs(self._vec)
-        return Vec2[float](float(arr[0]), float(arr[1]))
-
-    def sum(self) -> Number:
-        return super().sum()
-
-    def prod(self) -> Number:
-        return super().prod()
-
-    def min(self) -> Number:
-        return super().min()
-
-    def max(self) -> Number:
-        return super().max()
-
-    def is_unit(self, tol: float = 1e-8) -> bool:
-        return super().is_unit(tol)
+        norm1, norm2 = xp.sqrt(self.x**2 + self.y**2), xp.sqrt(other.x**2 + other.y**2)
+        return _angle_cosine(dot, norm1, norm2)
 
     def inverse(self) -> "Vec2[float]":
-        return Vec2[float](-float(self.x), -float(self.y))
+        inverse_coords = _calc_inverse_coords(self)
+        return Vec2[float](*inverse_coords)
 
     def reflect(self, normal: "Vec2[T]") -> "Vec2[float]":  # type: ignore[override]
-        n_vec = normal.normalize()
-        n = Vec2[float](n_vec[0], n_vec[1])
-        d = self.x * n.x + self.y * n.y
-        rx = self.x - 2 * d * n.x
-        ry = self.y - 2 * d * n.y
-        return Vec2[float](float(rx), float(ry))
+        reflection_coords = _calc_reflect_coords(self, normal)
+        return Vec2[float](*reflection_coords)
 
     def project(self, other: "Vec2[T]") -> "Vec2[float]":  # type: ignore[override]
-        n_vec = other.normalize()
-        n = Vec2[float](n_vec[0], n_vec[1])
-        d = self.x * n.x + self.y * n.y
-        return Vec2[float](float(n.x * d), float(n.y * d))
-
-    def angle_between(self, other: "Vec2[T]") -> float:  # type: ignore[override]
-        return super().angle_between(other)
-
-    def astype(self, dtype: type) -> "Vec2[float]":
-        arr = self._vec.astype(dtype)
-        return Vec2[float](float(arr[0]), float(arr[1]))
+        projection_coords = _calc_project_coords(self, other)
+        return Vec2[float](*projection_coords)
 
 
 class Vec3(Vector[T]):
-    def __init__(self, x: T, y: T, z: T) -> None:
+    def __init__(self, x: T, y: T, z: T):
         super().__init__([x, y, z])
+
+    def _create_instance(self, data: Sequence[Number]) -> "Vec3[float]":
+        return Vec3[float](data[0], data[1], data[2])
 
     @property
     def x(self) -> Number:
-        v = self._vec[0]
-        return _as_number(v, self._is_int)
+        return _get_coord_property(self, 0)
 
     @property
     def y(self) -> Number:
-        v = self._vec[1]
-        return _as_number(v, self._is_int)
+        return _get_coord_property(self, 1)
 
     @property
     def z(self) -> Number:
-        v = self._vec[2]
-        return _as_number(v, self._is_int)
+        return _get_coord_property(self, 2)
 
     def cross(self, other: "Vec3[T]") -> "Vec3[float]":
         cx = self.y * other.z - self.z * other.y
@@ -330,160 +378,53 @@ class Vec3(Vector[T]):
 
     def angle(self, other: "Vec3[T]") -> float:
         dot = self.x * other.x + self.y * other.y + self.z * other.z
-        norm1 = xp.sqrt(self.x**2 + self.y**2 + self.z**2)
-        norm2 = xp.sqrt(other.x**2 + other.y**2 + other.z**2)
-        cos_theta = dot / (norm1 * norm2)
-        return xp.acos(xp.clip(cos_theta, -1.0, 1.0))
-
-    def distance(self, other: "Vec3[T]") -> float:  # type: ignore[override]
-        return super().distance(other)
-
-    def manhattan(self, other: "Vec3[T]") -> Number:  # type: ignore[override]
-        return super().manhattan(other)
-
-    def lerp(self, other: "Vec3[T]", t: float) -> "Vec3[float]":  # type: ignore[override]
-        return Vec3[float](
-            float(self.x * (1 - t) + other.x * t),
-            float(self.y * (1 - t) + other.y * t),
-            float(self.z * (1 - t) + other.z * t),
-        )
-
-    def clamp(self, min_val: Number, max_val: Number) -> "Vec3[float]":  # type: ignore[override]
-        arr = xp.clip(self._vec, min_val, max_val)
-        return Vec3[float](float(arr[0]), float(arr[1]), float(arr[2]))
-
-    def abs(self) -> "Vec3[float]":  # type: ignore[override]
-        arr = xp.abs(self._vec)
-        return Vec3[float](float(arr[0]), float(arr[1]), float(arr[2]))
-
-    def sum(self) -> Number:
-        return super().sum()
-
-    def prod(self) -> Number:
-        return super().prod()
-
-    def min(self) -> Number:
-        return super().min()
-
-    def max(self) -> Number:
-        return super().max()
-
-    def is_unit(self, tol: float = 1e-8) -> bool:
-        return super().is_unit(tol)
+        norm1, norm2 = xp.sqrt(self.x**2 + self.y**2 + self.z**2), xp.sqrt(other.x**2 + other.y**2 + other.z**2)
+        return _angle_cosine(dot, norm1, norm2)
 
     def inverse(self) -> "Vec3[float]":
-        return Vec3[float](-float(self.x), -float(self.y), -float(self.z))
+        inverse_coords = _calc_inverse_coords(self)
+        return Vec3[float](*inverse_coords)
 
     def reflect(self, normal: "Vec3[T]") -> "Vec3[float]":  # type: ignore[override]
-        n_vec = normal.normalize()
-        n = Vec3[float](n_vec[0], n_vec[1], n_vec[2])
-        d = self.x * n.x + self.y * n.y + self.z * n.z
-        rx = self.x - 2 * d * n.x
-        ry = self.y - 2 * d * n.y
-        rz = self.z - 2 * d * n.z
-        return Vec3[float](float(rx), float(ry), float(rz))
+        reflection_coords = _calc_reflect_coords(self, normal)
+        return Vec3[float](*reflection_coords)
 
     def project(self, other: "Vec3[T]") -> "Vec3[float]":  # type: ignore[override]
-        n_vec = other.normalize()
-        n = Vec3[float](n_vec[0], n_vec[1], n_vec[2])
-        d = self.x * n.x + self.y * n.y + self.z * n.z
-        return Vec3[float](float(n.x * d), float(n.y * d), float(n.z * d))
-
-    def angle_between(self, other: "Vec3[T]") -> float:  # type: ignore[override]
-        return super().angle_between(other)
-
-    def astype(self, dtype: type) -> "Vec3[float]":
-        arr = self._vec.astype(dtype)
-        return Vec3[float](float(arr[0]), float(arr[1]), float(arr[2]))
+        projection_coords = _calc_project_coords(self, other)
+        return Vec3[float](*projection_coords)
 
 
 class Vec4(Vector[T]):
-    def __init__(self, x: T, y: T, z: T, w: T) -> None:
+    def __init__(self, x: T, y: T, z: T, w: T):
         super().__init__([x, y, z, w])
+
+    def _create_instance(self, data: Sequence[Number]) -> "Vec4[float]":
+        return Vec4[float](data[0], data[1], data[2], data[3])
 
     @property
     def x(self) -> Number:
-        v = self._vec[0]
-        return _as_number(v, self._is_int)
+        return _get_coord_property(self, 0)
 
     @property
     def y(self) -> Number:
-        v = self._vec[1]
-        return _as_number(v, self._is_int)
+        return _get_coord_property(self, 1)
 
     @property
     def z(self) -> Number:
-        v = self._vec[2]
-        return _as_number(v, self._is_int)
+        return _get_coord_property(self, 2)
 
     @property
     def w(self) -> Number:
-        v = self._vec[3]
-        return _as_number(v, self._is_int)
-
-    def distance(self, other: "Vec4[T]") -> float:  # type: ignore[override]
-        return super().distance(other)
-
-    def manhattan(self, other: "Vec4[T]") -> Number:  # type: ignore[override]
-        return super().manhattan(other)
-
-    def lerp(self, other: "Vec4[T]", t: float) -> "Vec4[float]":  # type: ignore[override]
-        return Vec4[float](
-            float(self.x * (1 - t) + other.x * t),
-            float(self.y * (1 - t) + other.y * t),
-            float(self.z * (1 - t) + other.z * t),
-            float(self.w * (1 - t) + other.w * t),
-        )
-
-    def clamp(self, min_val: Number, max_val: Number) -> "Vec4[float]":  # type: ignore[override]
-        arr = xp.clip(self._vec, min_val, max_val)
-        return Vec4[float](float(arr[0]), float(arr[1]), float(arr[2]), float(arr[3]))
-
-    def abs(self) -> "Vec4[float]":  # type: ignore[override]
-        arr = xp.abs(self._vec)
-        return Vec4[float](float(arr[0]), float(arr[1]), float(arr[2]), float(arr[3]))
-
-    def sum(self) -> Number:
-        return super().sum()
-
-    def prod(self) -> Number:
-        return super().prod()
-
-    def min(self) -> Number:
-        return super().min()
-
-    def max(self) -> Number:
-        return super().max()
-
-    def is_unit(self, tol: float = 1e-8) -> bool:
-        return super().is_unit(tol)
+        return _get_coord_property(self, 3)
 
     def inverse(self) -> "Vec4[float]":
-        return Vec4[float](
-            -float(self.x), -float(self.y), -float(self.z), -float(self.w)
-        )
+        inverse_coords = _calc_inverse_coords(self)
+        return Vec4[float](*inverse_coords)
 
     def reflect(self, normal: "Vec4[T]") -> "Vec4[float]":  # type: ignore[override]
-        n_vec = normal.normalize()
-        n = Vec4[float](n_vec[0], n_vec[1], n_vec[2], n_vec[3])
-        d = self.x * n.x + self.y * n.y + self.z * n.z + self.w * n.w
-        rx = self.x - 2 * d * n.x
-        ry = self.y - 2 * d * n.y
-        rz = self.z - 2 * d * n.z
-        rw = self.w - 2 * d * n.w
-        return Vec4[float](float(rx), float(ry), float(rz), float(rw))
+        reflection_coords = _calc_reflect_coords(self, normal)
+        return Vec4[float](*reflection_coords)
 
     def project(self, other: "Vec4[T]") -> "Vec4[float]":  # type: ignore[override]
-        n_vec = other.normalize()
-        n = Vec4[float](n_vec[0], n_vec[1], n_vec[2], n_vec[3])
-        d = self.x * n.x + self.y * n.y + self.z * n.z + self.w * n.w
-        return Vec4[float](
-            float(n.x * d), float(n.y * d), float(n.z * d), float(n.w * d)
-        )
-
-    def angle_between(self, other: "Vec4[T]") -> float:  # type: ignore[override]
-        return super().angle_between(other)
-
-    def astype(self, dtype: type) -> "Vec4[float]":
-        arr = self._vec.astype(dtype)
-        return Vec4[float](float(arr[0]), float(arr[1]), float(arr[2]), float(arr[3]))
+        projection_coords = _calc_project_coords(self, other)
+        return Vec4[float](*projection_coords)

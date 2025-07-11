@@ -1,26 +1,30 @@
-from typing import Union, List, Tuple, TypeVar, Generic, Sequence, Literal, Final
-from numba import njit, prange
+# 標準ライブラリ
+from typing import Final, Generic, Iterator, List, Literal, Sequence, Tuple, TypeVar, Union
 
-Number = Union[float, int]
-T = TypeVar("T", bound=Number)
+# サードパーティライブラリ
+from numba import njit, prange
 
 try:
     import cupy as xp  # type: ignore
 except ImportError:
     import numpy as xp
 
+# 型定義
+Number = Union[float, int]
+T = TypeVar("T", bound=Number)
+
 _DEF_INT_KIND: Final = ("i",)
 
 
-def _is_int_dtype(arr) -> bool:
+def _is_int(arr) -> bool:
     return getattr(arr, "dtype", None) is not None and arr.dtype.kind in _DEF_INT_KIND
 
 
-def _as_number(v, is_int: bool) -> Number:
+def _to_number(v, is_int: bool) -> Number:
     return int(v) if is_int else float(v)
 
 
-def _validate_args(args: tuple, name: str) -> None:
+def _validate(args: tuple, name: str):
     """引数のバリデーション（共通処理）"""
     if not 1 <= len(args) <= 4:
         raise TypeError(f"{name} takes 1 to 4 arguments, got {len(args)}")
@@ -32,7 +36,7 @@ def _validate_args(args: tuple, name: str) -> None:
 
 
 @njit(cache=True)
-def _norm_numba(arr):
+def _norm_fast(arr) -> float:
     s = 0.0
     for v in arr:
         s += v * v
@@ -40,7 +44,7 @@ def _norm_numba(arr):
 
 
 @njit(cache=True)
-def _is_zero_numba(arr):
+def _is_zero_fast(arr) -> bool:
     for v in arr:
         if v != 0:
             return False
@@ -49,14 +53,14 @@ def _is_zero_numba(arr):
 
 def _norm(arr) -> float:
     if hasattr(arr, "dtype") and arr.__class__.__module__.startswith("numpy"):
-        return _norm_numba(arr)
+        return _norm_fast(arr)
     else:
         return float((arr * arr).sum() ** 0.5)
 
 
 def _is_zero(arr) -> bool:
     if hasattr(arr, "dtype") and arr.__class__.__module__.startswith("numpy"):
-        return _is_zero_numba(arr)
+        return _is_zero_fast(arr)
     else:
         return bool((arr == 0).all())
 
@@ -89,14 +93,14 @@ def batch_is_zero(arrs: xp.ndarray) -> xp.ndarray:
 
 
 class Position(Generic[T]):  # type: ignore
-    def __init__(self, *args: T) -> None:
-        _validate_args(args, "Position")
+    def __init__(self, *args: T):
+        _validate(args, "Position")
         dtype = float if any(isinstance(a, float) for a in args) else int
         arr = xp.array(args, dtype=dtype)
         arr.setflags(write=False)
         self._coords: xp.ndarray = arr
         self._locked: bool = True
-        self._is_int: bool = _is_int_dtype(arr)
+        self._is_int: bool = _is_int(arr)
 
     def __setattr__(self, name, value):
         if (
@@ -107,39 +111,55 @@ class Position(Generic[T]):  # type: ignore
             raise AttributeError("Position is immutable")
         super().__setattr__(name, value)
 
+    def __len__(self) -> int:
+        return self._coords.size
+
+    def __iter__(self) -> Iterator[Number]:
+        is_int = self._is_int
+        for v in self._coords:
+            yield _to_number(v, is_int)
+
+    def __getitem__(self, key) -> Number:
+        names: Tuple[str, ...] = ("x", "y", "z", "w")
+        if isinstance(key, int):
+            if key < 0 or key >= self._coords.size:
+                raise IndexError("Position index out of range")
+            v = self._coords[key]
+            return _to_number(v, self._is_int)
+        elif isinstance(key, str):
+            idx = names.index(key)
+            if self._coords.size <= idx:
+                raise KeyError(f"'{key}' is not defined for this dimension")
+            v = self._coords[idx]
+            return _to_number(v, self._is_int)
+        else:
+            raise TypeError("Key must be int or one of 'x', 'y', 'z', 'w'")
+
     @property
     def x(self) -> Number:
         v = self._coords[0]
-        return _as_number(v, self._is_int)
+        return _to_number(v, self._is_int)
 
     @property
     def y(self) -> Number:
         if self._coords.size <= 1:
-            raise AttributeError("y is not defined for this dimension")
+            raise IndexError("y is not defined for this dimension")
         v = self._coords[1]
-        return _as_number(v, self._is_int)
+        return _to_number(v, self._is_int)
 
     @property
     def z(self) -> Number:
         if self._coords.size <= 2:
-            raise AttributeError("z is not defined for this dimension")
+            raise IndexError("z is not defined for this dimension")
         v = self._coords[2]
-        return _as_number(v, self._is_int)
+        return _to_number(v, self._is_int)
 
     @property
     def w(self) -> Number:
         if self._coords.size <= 3:
-            raise AttributeError("w is not defined for this dimension")
+            raise IndexError("w is not defined for this dimension")
         v = self._coords[3]
-        return _as_number(v, self._is_int)
-
-    def __getitem__(self, key: Literal["x", "y", "z", "w"]) -> Number:
-        names: Tuple[str, ...] = ("x", "y", "z", "w")
-        idx = names.index(key)
-        if self._coords.size <= idx:
-            raise KeyError(f"'{key}' is not defined for this dimension")
-        v = self._coords[idx]
-        return _as_number(v, self._is_int)
+        return _to_number(v, self._is_int)
 
     @property
     def ndim(self) -> int:
@@ -147,11 +167,11 @@ class Position(Generic[T]):  # type: ignore
 
     def to_list(self) -> List[Number]:
         is_int = self._is_int
-        return [_as_number(v, is_int) for v in self._coords]
+        return [_to_number(v, is_int) for v in self._coords]
 
     def to_tuple(self) -> Tuple[Number, ...]:
         is_int = self._is_int
-        return tuple(_as_number(v, is_int) for v in self._coords)
+        return tuple(_to_number(v, is_int) for v in self._coords)
 
     def is_zero(self) -> bool:
         return bool(_is_zero(self._coords))
@@ -166,4 +186,4 @@ class Position(Generic[T]):  # type: ignore
     def __repr__(self) -> str:
         names = ["x", "y", "z", "w"]
         coords = [f"{names[i]}={self._coords[i]}" for i in range(self._coords.size)]
-        return f"Position({', '.join(coords)})"
+        return f"{self.__class__.__name__}({', '.join(coords)})"

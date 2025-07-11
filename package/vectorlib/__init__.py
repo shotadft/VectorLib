@@ -5,6 +5,7 @@ VectorLib サブパッケージ
 - Vec2, Vec3, Vec4: n次元ベクトルクラス
 """
 
-from .vector import Vector, Vec2, Vec3, Vec4
+# ローカルモジュール
+from .vector import Vec2, Vec3, Vec4, Vector
 
 __all__ = ["Vector", "Vec2", "Vec3", "Vec4"]

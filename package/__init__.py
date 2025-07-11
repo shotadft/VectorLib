@@ -5,6 +5,7 @@ VectorLib パッケージ
 - VectorLib: 汎用ベクトルクラス
 """
 
+# ローカルモジュール
 from . import positionlib, vectorlib
 
 __all__ = ["positionlib", "vectorlib"] 

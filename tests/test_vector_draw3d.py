@@ -9,7 +9,7 @@ def draw_vector3d(radius: int, pos: Position[int], outdir: str = "") -> str:
         outdir = os.path.expanduser("~/Desktop")
     
     # PositionからVec3を作成
-    vec = Vec3(pos.x, pos.y, pos.z)
+    vec = Vec3(pos)
     
     fig = plt.figure()
     ax = Axes3D(fig)

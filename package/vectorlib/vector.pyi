@@ -1,4 +1,14 @@
-from typing import TypeVar, Generic, Union, List, Tuple, Sequence, Iterator
+from typing import (
+    TypeVar,
+    Generic,
+    Union,
+    List,
+    Tuple,
+    Sequence,
+    Iterator,
+    Optional,
+    overload,
+)
 from ..positionlib.position import Position
 
 Number = Union[float, int]
@@ -43,7 +53,11 @@ class Vector(Generic[T]):
     def _calc_project_coords(self, other: "Vector[T]") -> List[float]: ...
 
 class Vec2(Vector[T]):
-    def __init__(self, x: Union[T, "Position[T]"], y: T) -> None: ...
+    @overload
+    def __init__(self, x: Position[T], y: None = ...) -> None: ...
+    @overload
+    def __init__(self, x: T, y: T) -> None: ...
+    def __init__(self, x: Union[T, Position[T]], y: Optional[T] = None): ...
     @property
     def x(self) -> T: ...
     @property
@@ -55,7 +69,13 @@ class Vec2(Vector[T]):
     def project(self, other: "Vec2[T]") -> "Vec2[float]": ...  # type: ignore[override]
 
 class Vec3(Vector[T]):
-    def __init__(self, x: Union[T, "Position[T]"], y: T, z: T) -> None: ...
+    @overload
+    def __init__(self, x: Position[T], y: None = None, z: None = None) -> None: ...
+    @overload
+    def __init__(self, x: T, y: T, z: T) -> None: ...
+    def __init__(
+        self, x: Union[T, Position[T]], y: Optional[T] = None, z: Optional[T] = None
+    ): ...
     @property
     def x(self) -> T: ...
     @property
@@ -69,7 +89,19 @@ class Vec3(Vector[T]):
     def project(self, other: "Vec3[T]") -> "Vec3[float]": ...  # type: ignore[override]
 
 class Vec4(Vector[T]):
-    def __init__(self, x: Union[T, "Position[T]"], y: T, z: T, w: T) -> None: ...
+    @overload
+    def __init__(
+        self, x: Position[T], y: None = None, z: None = None, w: None = None
+    ) -> None: ...
+    @overload
+    def __init__(self, x: T, y: T, z: T, w: T) -> None: ...
+    def __init__(
+        self,
+        x: Union[T, Position[T]],
+        y: Optional[T] = None,
+        z: Optional[T] = None,
+        w: Optional[T] = None,
+    ): ...
     @property
     def x(self) -> T: ...
     @property

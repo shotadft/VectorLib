@@ -1,5 +1,17 @@
 # 標準ライブラリ
-from typing import Final, Generic, Iterator, List, Sequence, Tuple, TypeVar, Union, cast
+from typing import (
+    Final,
+    Generic,
+    Iterator,
+    List,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+    Optional,
+)
 
 # サードパーティライブラリ
 from numba import njit, prange
@@ -337,12 +349,19 @@ class Vector(Generic[T]):
 
 
 class Vec2(Vector[T]):
-    def __init__(self, x: Union[T, Position[T]], y: T):
+    @overload
+    def __init__(self, x: Position[T], y: None = None): ...
+    @overload
+    def __init__(self, x: T, y: T): ...
+
+    def __init__(self, x: Union[T, Position[T]], y: Optional[T] = None):
         if isinstance(x, Position):
             if len(x) != 2:
                 raise ValueError
             super().__init__(x)
         else:
+            if y is None:
+                raise TypeError("y must not be None when x is not Position")
             super().__init__([x, y])
 
     def _create_instance(self, data: Sequence[Number]) -> "Vec2[float]":
@@ -383,12 +402,20 @@ class Vec2(Vector[T]):
 
 
 class Vec3(Vector[T]):
-    def __init__(self, x: Union[T, Position[T]], y: T, z: T):
+    @overload
+    def __init__(self, x: Position[T], y: None = None, z: None = None): ...
+    @overload
+    def __init__(self, x: T, y: T, z: T): ...
+    def __init__(
+        self, x: Union[T, Position[T]], y: Optional[T] = None, z: Optional[T] = None
+    ):
         if isinstance(x, Position):
             if len(x) != 3:
                 raise ValueError
             super().__init__(x)
         else:
+            if y is None or z is None:
+                raise TypeError("y and z must not be None when x is not Position")
             super().__init__([x, y, z])
 
     def _create_instance(self, data: Sequence[Number]) -> "Vec3[float]":
@@ -433,12 +460,26 @@ class Vec3(Vector[T]):
 
 
 class Vec4(Vector[T]):
-    def __init__(self, x: Union[T, Position[T]], y: T, z: T, w: T):
+    @overload
+    def __init__(
+        self, x: Position[T], y: None = None, z: None = None, w: None = None
+    ): ...
+    @overload
+    def __init__(self, x: T, y: T, z: T, w: T): ...
+    def __init__(
+        self,
+        x: Union[T, Position[T]],
+        y: Optional[T] = None,
+        z: Optional[T] = None,
+        w: Optional[T] = None,
+    ):
         if isinstance(x, Position):
             if len(x) != 4:
                 raise ValueError
             super().__init__(x)
         else:
+            if y is None or z is None or w is None:
+                raise TypeError("y, z, w must not be None when x is not Position")
             super().__init__([x, y, z, w])
 
     def _create_instance(self, data: Sequence[Number]) -> "Vec4[float]":

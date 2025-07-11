@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -32,10 +32,9 @@ Homepage = "https://github.com/shotadft/VectorLib"
 Issues = "https://github.com/shotadft/VectorLib/issues"
 
 [project.optional-dependencies]
-cupy = ["cupy>=10.0"]
+cupy = ["cupy"]
 
-[tool.setuptools.packages.find]
-where = ["package"]
-
-[tool.setuptools.package-data]
-"package" = ["py.typed"] 
+[tool.setuptools]
+package-dir = {"" = "package"}
+packages = ["positionlib", "vectorlib"]
+include-package-data = true

@@ -36,8 +36,5 @@ cupy = ["cupy"]
 
 [tool.setuptools]
 package-dir = {"" = "package"}
+packages = ["positionlib", "vectorlib"]
 include-package-data = true
-
-[tool.setuptools.packages.find]
-where = ["package"]
-exclude = ["tests*", "venv*", "build*", "dist*", "*.egg-info*", ".vscode*", "__pycache__*", ".mypy_cache*", ".pytest_cache*", ".coverage*", ".tox*", ".nox*", "htmlcov*", ".hypothesis*", ".cache*", ".ipynb_checkpoints*", ".python-version*", ".dmypy.json*", "Thumbs.db*", "Desktop.ini*", "*.env*", "*.local*"]

@@ -1,4 +1,4 @@
-# VectorLib
+# VecPosLib
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
@@ -48,4 +48,4 @@ View to [requirements.txt](https://github.com/shotadft/VectorLib/blob/master/req
 [license-shield]: https://img.shields.io/github/license/shotadft/VectorLib.svg?style=for-the-badge
 [license-url]: https://github.com/shotadft/VectorLib/blob/master/LICENSE.md
 [version-shield]: https://img.shields.io/badge/1.0.0-00c81b?label=version&style=for-the-badge
-[header-id]: #VectorLib
+[header-id]: #VecPosLib

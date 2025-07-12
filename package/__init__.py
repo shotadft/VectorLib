@@ -1,5 +1,5 @@
 """
-VectorLib パッケージ
+VecPosLib パッケージ
 
 - PositionLib: 位置ベクトルクラス
 - VectorLib: 汎用ベクトルクラス

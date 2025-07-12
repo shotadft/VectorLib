@@ -1,2 +1,33 @@
 include package/py.typed
-include README.md 
+include README.md
+
+# Exclude tests directory
+exclude tests/
+exclude tests/*
+
+# Exclude directories from .gitignore
+exclude venv/
+exclude build/
+exclude dist/
+exclude *.egg-info/
+exclude .vscode/
+exclude .DS_Store
+exclude __pycache__/
+exclude *.pyc
+exclude *.pyo
+exclude *.pyd
+exclude .mypy_cache/
+exclude .pytest_cache/
+exclude .coverage
+exclude .tox/
+exclude .nox/
+exclude htmlcov/
+exclude .hypothesis/
+exclude .cache/
+exclude .ipynb_checkpoints/
+exclude .python-version
+exclude .dmypy.json
+exclude Thumbs.db
+exclude Desktop.ini
+exclude *.env
+exclude *.local

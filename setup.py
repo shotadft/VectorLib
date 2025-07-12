@@ -7,7 +7,7 @@ setup(
     author="Shotadft",
     author_email="98450322+shotadft@users.noreply.github.com",
     url="https://github.com/shotadft/VectorLib",
-    packages=find_packages(exclude=["tests*", "venv*", "build*", "dist*", "*.egg-info*", ".vscode*", "__pycache__*", ".mypy_cache*", ".pytest_cache*", ".coverage*", ".tox*", ".nox*", "htmlcov*", ".hypothesis*", ".cache*", ".ipynb_checkpoints*", ".python-version*", ".dmypy.json*", "Thumbs.db*", "Desktop.ini*", "*.env*", "*.local*"]),
+    packages=find_packages(where="package", exclude=["tests*", "venv*", "build*", "dist*", "*.egg-info*", ".vscode*", "__pycache__*", ".mypy_cache*", ".pytest_cache*", ".coverage*", ".tox*", ".nox*", "htmlcov*", ".hypothesis*", ".cache*", ".ipynb_checkpoints*", ".python-version*", ".dmypy.json*", "Thumbs.db*", "Desktop.ini*", "*.env*", "*.local*"]),
     package_data={
         "package": ["py.typed"],
     },

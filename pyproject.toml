@@ -36,7 +36,6 @@ cupy = ["cupy"]
 
 [tool.setuptools]
 package-dir = {"" = "package"}
-packages = ["positionlib", "vectorlib"]
 include-package-data = true
 
 [tool.setuptools.packages.find]

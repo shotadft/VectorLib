@@ -4,8 +4,6 @@ from typing import (
     Generic,
     Iterator,
     List,
-    Literal,
-    Sequence,
     Tuple,
     TypeVar,
     Union,
@@ -13,7 +11,7 @@ from typing import (
 )
 
 # サードパーティライブラリ
-from numba import njit, prange
+from numba import njit
 
 try:
     import cupy as xp  # type: ignore

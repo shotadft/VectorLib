@@ -16,9 +16,12 @@ View to [requirements.txt](https://github.com/shotadft/VectorLib/blob/master/req
 
 ## Development Environments
 - Cursor (FREE Plan)<br/>
-**⚠️当プログラムは一部に生成AIを使用して開発されています。⚠️**
+**⚠️当プログラムは一部に生成AIを使用して開発されています⚠️**
 
 ## Installations
+```bash
+pip install vecposlib
+```
 
 ## Usage
 - **`Position`**: 座標管理クラス
@@ -47,5 +50,5 @@ View to [requirements.txt](https://github.com/shotadft/VectorLib/blob/master/req
 [issues-url]: https://github.com/shotadft/VectorLib/issues
 [license-shield]: https://img.shields.io/github/license/shotadft/VectorLib.svg?style=for-the-badge
 [license-url]: https://github.com/shotadft/VectorLib/blob/master/LICENSE.md
-[version-shield]: https://img.shields.io/badge/1.0.0-00c81b?label=version&style=for-the-badge
+[version-shield]: https://img.shields.io/badge/1.0.1-00c81b?label=version&style=for-the-badge
 [header-id]: #VecPosLib

@@ -1,22 +1,19 @@
 from typing import (
-    TypeVar,
     Generic,
-    Union,
     List,
     Tuple,
     Sequence,
     Iterator,
     Optional,
+    Union,
     overload,
 )
 from positionlib.position import Position
-
-Number = Union[float, int]
-T = TypeVar("T", bound=Number)
+from ..common import Number, T
 
 class Vector(Generic[T]):
     def __init__(self, data: Union[Sequence[T], "Position[T]"]) -> None: ...
-    def __setattr__(self, name, value) -> None: ...
+    def __setattr__(self, name: str, value: object) -> None: ...
     @property
     def ndim(self) -> int: ...
     def to_list(self) -> List[T]: ...

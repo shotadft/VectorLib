@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="VectorLib",
-    version="1.0.1",
+    version="1.0.2",
     description="This is a library that enables vector calculations in Python.",
     author="Shotadft",
     author_email="98450322+shotadft@users.noreply.github.com",
@@ -21,7 +21,7 @@ setup(
     },
     python_requires=">=3.13",
     classifiers=[
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.13",
         "Operating System :: OS Independent",
         "Typing :: Typed",
         "License :: OSI Approved :: MIT License",

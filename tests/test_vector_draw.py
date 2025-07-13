@@ -1,7 +1,12 @@
+# 標準ライブラリ
 import os
+
+# サードパーティライブラリ
 import matplotlib.pyplot as plt
-from package.positionlib.position import Position
-from package.vectorlib.vector import Vec2
+
+# ローカルモジュール
+from package.vecposlib.positionlib import Position
+from package.vecposlib.vectorlib import Vec2
 
 def draw_vector(radius: int, pos: Position[int], outdir: str = "") -> str:
     if not outdir:

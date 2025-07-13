@@ -6,6 +6,6 @@ VecPosLib サブパッケージ
 """
 
 # ローカルモジュール
-from .vector import Vec2, Vec3, Vec4, Vector
+from .vector import Vector, Vec2, Vec3, Vec4
 
 __all__ = ["Vector", "Vec2", "Vec3", "Vec4"]

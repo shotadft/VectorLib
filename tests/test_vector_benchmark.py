@@ -1,5 +1,8 @@
+# 標準ライブラリ
 import pytest
-from package.vectorlib.vector import Vector
+
+# ローカルモジュール
+from package.vecposlib.vectorlib import Vector
 
 @pytest.mark.benchmark(group="vector_create")
 def test_vector_create_int(benchmark):

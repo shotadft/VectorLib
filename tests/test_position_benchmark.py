@@ -1,9 +1,12 @@
+# 標準ライブラリ
 import random
-import time
 import statistics
-from typing import List
+import time
 from dataclasses import dataclass
-from package.positionlib.position import Position
+from typing import List
+
+# ローカルモジュール
+from package.vecposlib.positionlib import Position
 
 @dataclass
 class BenchmarkResult:
@@ -15,7 +18,7 @@ class BenchmarkResult:
     min_time: float
     max_time: float
     std_dev: float
-    throughput: float  # operations per second
+    throughput: float
 
 class PositionBenchmark:
     """Positionクラスのベンチマーク実行クラス"""
@@ -152,10 +155,10 @@ def test_position_method_benchmark():
     benchmark = PositionBenchmark(seed=42)
     
     positions = [
-        Position(0, 0),  # zero vector
-        Position(3, 4),  # 3-4-5 triangle
-        Position(1, 1, 1),  # 3D unit cube
-        Position(1, 1, 1, 1),  # 4D unit cube
+        Position(0, 0),
+        Position(3, 4),
+        Position(1, 1, 1),
+        Position(1, 1, 1, 1),
     ]
     
     for i, pos in enumerate(positions):

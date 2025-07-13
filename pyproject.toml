@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "VecPosLib"
-version = "1.0.1"
+version = "1.0.2"
 description = "This is a library that enables vector calculations in Python."
 authors = [
   { name = "Shotadft", email = "98450322+shotadft@users.noreply.github.com" }
@@ -20,7 +20,7 @@ keywords = [
   "vector", "math", "numpy", "cupy", "numba", "linear algebra", "gpu", "coordinates", "scientific computing"
 ]
 classifiers = [
-  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
   "Operating System :: OS Independent",
   "Typing :: Typed",
   "License :: OSI Approved :: MIT License"
@@ -36,5 +36,7 @@ cupy = ["cupy"]
 
 [tool.setuptools]
 package-dir = {"" = "package"}
-packages = ["positionlib", "vectorlib"]
-include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["package"]
+include = ["vecposlib*"]

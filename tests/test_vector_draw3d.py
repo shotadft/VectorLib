@@ -1,14 +1,18 @@
+# 標準ライブラリ
 import os
+
+# サードパーティライブラリ
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 (for 3D projection)
-from package.positionlib.position import Position
-from package.vectorlib.vector import Vec3
+from mpl_toolkits.mplot3d import Axes3D
+
+# ローカルモジュール
+from package.vecposlib.positionlib import Position
+from package.vecposlib.vectorlib import Vec3
 
 def draw_vector3d(radius: int, pos: Position[int], outdir: str = "") -> str:
     if not outdir:
         outdir = os.path.expanduser("~/Desktop")
     
-    # PositionからVec3を作成
     vec = Vec3(pos)
     
     fig = plt.figure()

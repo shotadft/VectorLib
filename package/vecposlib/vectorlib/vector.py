@@ -27,7 +27,7 @@ from ..common import (
     _USE_CUPY,
     xp,
 )
-from positionlib.position import Position
+from ..positionlib.position import Position
 
 # 定数
 _DEF_INT_KIND = ("i",)

@@ -28,10 +28,12 @@ pip install vecposlib
 ```
 
 ## Usage
-- **`Position`**: 座標管理クラス
+### vectorlib
 - **`Vector`**: 基本ベクトルクラス
     - **`Vec2` `Vec3` `Vec4`**: n次元特化クラス
-        - Positionオブジェクトまたは数値で初期化可能。
+        - `Position`オブジェクトでも初期化ができます
+### positionlib
+- **`Position`**: 座標管理クラス
 
 ## Features
 - 型安全な2次元・3次元・4次元ベクトルクラス（Vec2, Vec3, Vec4）

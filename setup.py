@@ -1,4 +1,6 @@
 """パッケージセットアップスクリプト"""
+
+import os
 from setuptools import setup, find_packages
 
 exclude_patterns = [
@@ -26,16 +28,15 @@ exclude_patterns = [
     "*.local*",
 ]
 
-import os
 if os.path.exists("README.md"):
     with open("README.md", encoding="utf-8") as f:
-        long_description = f.read()
+        LONG_DESCRIPTION = f.read()
 else:
-    long_description = ""
+    LONG_DESCRIPTION = ""
 
 setup(
     name="VectorLib",
-    version="1.0.2",
+    version="1.0.3",
     description="This is a library that enables vector calculations in Python.",
     author="Shotadft",
     author_email="98450322+shotadft@users.noreply.github.com",
@@ -45,20 +46,20 @@ setup(
         "package": ["py.typed"],
     },
     include_package_data=True,
-    install_requires=[
-        "numpy>=1.26.0,<2.3",
-        "numba>=0.61.2"
-    ],
+    install_requires=["numpy>=1.26.0,<2.3", "numba>=0.61.2"],
     extras_require={
         "cupy": ["cupy>=10.0"],
     },
     python_requires=">=3.13",
     classifiers=[
-        "Programming Language :: Python :: 3.13",
+        "License :: OSI Approved :: MIT License",
+        "Topic :: Software Development :: Libraries",
+        "Natural Language :: Japanese",
+        "Natural Language :: English",
         "Operating System :: OS Independent",
         "Typing :: Typed",
-        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.13",
     ],
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
 )

@@ -11,6 +11,27 @@ name: 'Dependency review'
 on:
   pull_request:
     branches: [ "master" ]
+    paths:
+      - 'requirements.txt'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'package/vecposlib/**/__init__.py'
+      - '.github/workflows/dependency-review.yml'
+    paths-ignore:
+      - '**.py'
+      - '**.md'
+      - 'docs/**'
+      - 'tests/**'
+      - 'venv/**'
+      - '.venv/**'
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 # If using a dependency submission action in this workflow this permission will need to be set to:
 #
@@ -20,20 +41,21 @@ on:
 # https://docs.github.com/en/enterprise-cloud@latest/code-security/supply-chain-security/understanding-your-software-supply-chain/using-the-dependency-submission-api
 permissions:
   contents: read
-  # Write permissions for pull-requests are required for using the `comment-summary-in-pr` option, comment out if you aren't using this option
   pull-requests: write
 
 jobs:
   dependency-review:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
       - name: 'Dependency Review'
+        timeout-minutes: 8
         uses: actions/dependency-review-action@v4
         # Commonly enabled options, see https://github.com/actions/dependency-review-action#configuration-options for all available options.
         with:
           comment-summary-in-pr: always
-        #   fail-on-severity: moderate
-        #   deny-licenses: GPL-1.0-or-later, LGPL-2.0-or-later
-        #   retry-on-snapshot-warnings: true
+        # fail-on-severity: moderate
+          deny-licenses: GPL-1.0-or-later, LGPL-2.0-or-later
+        # retry-on-snapshot-warnings: true

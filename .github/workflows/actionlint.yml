@@ -1,0 +1,44 @@
+name: Actionlint
+
+on:
+  push:
+    branches: [ master, main ]
+    paths:
+      - '.github/workflows/**'
+      - '**.yml'
+      - '**.yaml'
+  pull_request:
+    branches: [ master, main ]
+    paths:
+      - '.github/workflows/**'
+      - '**.yml'
+      - '**.yaml'
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install actionlint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash -s
+          echo "$PWD/bin" >> $GITHUB_PATH
+
+      - name: Run actionlint
+        run: |
+          actionlint -color -verbose
+
+      - name: Run actionlint with shellcheck
+        run: |
+          actionlint -color -shellcheck

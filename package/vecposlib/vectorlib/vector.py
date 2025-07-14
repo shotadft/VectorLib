@@ -1,3 +1,4 @@
+"""N次元ベクトル演算用モジュール"""
 # 標準ライブラリ
 from typing import (
     Final,
@@ -120,7 +121,7 @@ class Vector(Generic[T]):
         return cast(VectorDimension, self._vec.size)
 
     def _create(self, data: Sequence[Number]) -> "Vector[float]":
-        """配列から新しいベクトル生成"""
+        """新しいVector生成"""
         return Vector[float](data)
 
     def _get_coord(self, index: int) -> T:

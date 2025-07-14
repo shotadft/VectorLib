@@ -1,3 +1,4 @@
+"""座標情報管理用モジュール"""
 # 標準ライブラリ
 from typing import Final, Generic, Iterator, List, Tuple, Union, cast
 

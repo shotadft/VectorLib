@@ -27,9 +27,9 @@ classifiers = [
 ]
 
 [project.urls]
-Repository = "https://github.com/shotadft/VectorLib"
-Homepage = "https://github.com/shotadft/VectorLib"
-Issues = "https://github.com/shotadft/VectorLib/issues"
+Repository = "https://github.com/shotadft/VecPosLib"
+Homepage = "https://github.com/shotadft/VecPosLib"
+Issues = "https://github.com/shotadft/VecPosLib/issues"
 
 [project.optional-dependencies]
 cupy = ["cupy"]

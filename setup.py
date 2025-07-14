@@ -35,12 +35,12 @@ else:
     LONG_DESCRIPTION = ""
 
 setup(
-    name="VectorLib",
+    name="VecPosLib",
     version="1.0.3",
     description="This is a library that enables vector calculations in Python.",
     author="Shotadft",
     author_email="98450322+shotadft@users.noreply.github.com",
-    url="https://github.com/shotadft/VectorLib",
+    url="https://github.com/shotadft/VecPosLib",
     packages=find_packages(where="package", exclude=exclude_patterns),
     package_data={
         "package": ["py.typed"],

@@ -1,5 +1,5 @@
 <h1 id="top" align="center">
-<img src="https://raw.githubusercontent.com/shotadft/VectorLib/master/.github/logo/VecPosLib-logo.svg" width="300" height="300"/>
+<img src="https://raw.githubusercontent.com/shotadft/VecPosLib/master/.github/logo/VecPosLib-logo.svg" width="300" height="300"/>
 </h1><br/>
 
 [![PyPI Downloads][pypi-shield]][pypi-url]
@@ -14,7 +14,7 @@
 ***This is a library that enables vector calculations in Python.***<br/>
 
 ## Requirement
-View to [requirements.txt](https://github.com/shotadft/VectorLib/blob/master/requirements.txt)
+View to [requirements.txt](https://github.com/shotadft/VecPosLib/blob/master/requirements.txt)
 ### Optional
 - CuPy (Version is Any)
 
@@ -50,13 +50,13 @@ pip install vecposlib
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [pypi-shield]: https://img.shields.io/pypi/dm/VecPosLib.svg?label=PyPI%20downloads&style=for-the-badge
 [pypi-url]: https://pypi.org/project/VecPosLib/
-[forks-shield]: https://img.shields.io/github/forks/shotadft/VectorLib.svg?style=for-the-badge
-[forks-url]: https://github.com/shotadft/VectorLib/network/members
-[stars-shield]: https://img.shields.io/github/stars/shotadft/VectorLib.svg?style=for-the-badge
-[stars-url]: https://github.com/shotadft/VectorLib/stargazers
-[issues-shield]: https://img.shields.io/github/issues/shotadft/VectorLib.svg?style=for-the-badge
-[issues-url]: https://github.com/shotadft/VectorLib/issues
-[license-shield]: https://img.shields.io/github/license/shotadft/VectorLib.svg?style=for-the-badge
-[license-url]: https://github.com/shotadft/VectorLib/blob/master/LICENSE.md
+[forks-shield]: https://img.shields.io/github/forks/shotadft/VecPosLib.svg?style=for-the-badge
+[forks-url]: https://github.com/shotadft/VecPosLib/network/members
+[stars-shield]: https://img.shields.io/github/stars/shotadft/VecPosLib.svg?style=for-the-badge
+[stars-url]: https://github.com/shotadft/VecPosLib/stargazers
+[issues-shield]: https://img.shields.io/github/issues/shotadft/VecPosLib.svg?style=for-the-badge
+[issues-url]: https://github.com/shotadft/VecPosLib/issues
+[license-shield]: https://img.shields.io/github/license/shotadft/VecPosLib.svg?style=for-the-badge
+[license-url]: https://github.com/shotadft/VecPosLib/blob/master/LICENSE.md
 [version-shield]: https://img.shields.io/badge/1.0.3-00c81b?label=version&style=for-the-badge
 [header-id]: #top

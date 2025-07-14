@@ -14,6 +14,7 @@ permissions:
 jobs:
   release-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -41,6 +42,9 @@ jobs:
       id-token: write
     environment:
       name: pypi
+    timeout-minutes: 15
+    env:
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 
     steps:
       - name: Retrieve release distributions
@@ -53,3 +57,5 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1.12
         with:
           packages-dir: dist/
+          skip-existing: true
+          password: ${{ secrets.PYPI_API_TOKEN }}

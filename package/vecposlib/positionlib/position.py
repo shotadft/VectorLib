@@ -1,11 +1,11 @@
 """座標情報管理用モジュール"""
+
 # 標準ライブラリ
-from typing import Final, Generic, Iterator, List, Tuple, Union, cast
+from typing import Generic, Iterator, List, Tuple, Union, cast
 
 # サードパーティライブラリ
-from numba import njit
 
-# ローカルモジュール
+# プロジェクト共通(サードパーティ含む)
 from ..common import (
     T,
     ArrayType,
@@ -14,6 +14,8 @@ from ..common import (
     _USE_CUPY,
     xp,
 )
+
+from numba import njit
 
 # 定数
 _DEF_INT_KIND = ("i",)
@@ -53,6 +55,7 @@ def _is_zero(arr: ArrayType) -> bool:
 
 class Position(Generic[T]):
     """座標情報クラス（1～4次元対応）"""
+
     def __init__(self, *args: T):
         """座標初期化"""
         if not 1 <= len(args) <= 4:
@@ -178,7 +181,7 @@ class Position(Generic[T]):
         norm = _norm(self._coords)
         if norm == 0:
             raise ValueError("Cannot normalize zero vector")
-        return Position[float](* (self._coords / norm).tolist())
+        return Position[float](*(self._coords / norm).tolist())
 
     def __repr__(self) -> str:
         """文字列表現返却"""

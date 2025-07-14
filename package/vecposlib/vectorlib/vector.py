@@ -1,4 +1,5 @@
 """N次元ベクトル演算用モジュール"""
+
 # 標準ライブラリ
 from typing import (
     Final,
@@ -14,9 +15,8 @@ from typing import (
 )
 
 # サードパーティライブラリ
-from numba import njit, prange
 
-# ローカルモジュール
+# プロジェクト共通(サードパーティ含む)
 from ..common import (
     T,
     ArrayType,
@@ -28,6 +28,10 @@ from ..common import (
     _USE_CUPY,
     xp,
 )
+
+from numba import njit, prange
+
+# ローカルモジュール
 from ..positionlib.position import Position
 
 # 定数
@@ -99,6 +103,7 @@ def _dot(a: ArrayType, b: ArrayType) -> float:
 
 class Vector(Generic[T]):
     """N次元ベクトルクラス"""
+
     def __init__(self, data: Union[Sequence[T], Position[T]]):
         """ベクトル初期化"""
         if isinstance(data, Position):
@@ -114,7 +119,7 @@ class Vector(Generic[T]):
         is_int = (
             getattr(arr, "dtype", None) is not None and arr.dtype.kind in _DEF_INT_KIND
         )
-        self._vec, self.vec, self._locked, self._is_int = arr, arr, True, is_int
+        self._vec, self._locked, self._is_int = arr, True, is_int
 
     @property
     def dimension(self) -> VectorDimension:
@@ -122,7 +127,7 @@ class Vector(Generic[T]):
         return cast(VectorDimension, self._vec.size)
 
     def _create(self, data: Sequence[Number]) -> "Vector[float]":
-        """新しいVector生成"""
+        """新規Vector生成"""
         return Vector[float](data)
 
     def _get_coord(self, index: int) -> T:
@@ -133,7 +138,7 @@ class Vector(Generic[T]):
         return cast(T, int(v) if target_type == int else float(v))
 
     def _from_arr(self, arr: ArrayType) -> "Vector[float]":
-        """配列から新しいベクトルを生成する。"""
+        """配列から新規ベクトルを生成"""
         return self._create(arr.tolist())
 
     def __setattr__(self, name: str, value: object):
@@ -177,15 +182,15 @@ class Vector(Generic[T]):
 
     def dot(self, other: "Vector[T]") -> float:
         """内積計算"""
-        return _dot(self._vec, other._vec)
+        return _dot(self._vec, other.get_vec())
 
     def __add__(self, other: "Vector[T]") -> "Vector[float]":
         """ベクトル加算"""
-        return self._create((self._vec + other._vec).tolist())
+        return self._create((self._vec + other.get_vec()).tolist())
 
     def __sub__(self, other: "Vector[T]") -> "Vector[float]":
         """ベクトル減算"""
-        return self._create((self._vec - other._vec).tolist())
+        return self._create((self._vec - other.get_vec()).tolist())
 
     def __repr__(self) -> str:
         """文字列表現返却"""
@@ -206,7 +211,9 @@ class Vector(Generic[T]):
     def __eq__(self, other: object) -> bool:
         """等価判定"""
         return (
-            False if not isinstance(other, Vector) else (self.vec == other.vec).all()
+            False
+            if not isinstance(other, Vector)
+            else (self._vec == other.get_vec()).all()
         )
 
     def __mul__(self, scalar: Number) -> "Vector[float]":
@@ -219,15 +226,15 @@ class Vector(Generic[T]):
 
     def distance(self, other: "Vector[T]") -> float:
         """ユークリッド距離計算"""
-        return float(((self._vec - other._vec) ** 2).sum() ** 0.5)
+        return float(((self._vec - other.get_vec()) ** 2).sum() ** 0.5)
 
     def manhattan(self, other: "Vector[T]") -> T:
         """マンハッタン距離計算"""
-        return self._cast_val(abs(self._vec - other._vec).sum())
+        return self._cast_val(abs(self._vec - other.get_vec()).sum())
 
     def lerp(self, other: "Vector[T]", t: float) -> "Vector[float]":
         """線形補間"""
-        return self._from_arr(self._vec * (1 - t) + other._vec * t)
+        return self._from_arr(self._vec * (1 - t) + other.get_vec() * t)
 
     def clamp(self, min_val: Number, max_val: Number) -> "Vector[float]":
         """値を指定範囲に制限"""
@@ -301,9 +308,14 @@ class Vector(Generic[T]):
         target_type = int if self._is_int else float
         return cast(T, int(value) if target_type == int else float(value))
 
+    def get_vec(self) -> ArrayType:
+        """ベクトル内部配列（読み取り専用）を返却"""
+        return self._vec
+
 
 class Vec2(Vector[T]):
     """2次元ベクトルクラス"""
+
     @overload
     def __init__(self, x: Position[T], y: None = None): ...
     @overload
@@ -321,7 +333,7 @@ class Vec2(Vector[T]):
             super().__init__([x, y])
 
     def _create(self, data: Sequence[Number]) -> "Vec2[float]":
-        """新しいVec2生成"""
+        """新規Vec2生成"""
         return Vec2[float](data[0], data[1])
 
     @property
@@ -364,6 +376,7 @@ class Vec2(Vector[T]):
 
 class Vec3(Vector[T]):
     """3次元ベクトルクラス"""
+
     @overload
     def __init__(self, x: Position[T], y: None = None, z: None = None): ...
     @overload
@@ -385,7 +398,7 @@ class Vec3(Vector[T]):
             super().__init__([x, y, z])  # type: ignore[arg-type]
 
     def _create(self, data: Sequence[Number]) -> "Vec3[float]":
-        """新しいVec3生成"""
+        """新規Vec3生成"""
         return Vec3[float](data[0], data[1], data[2])
 
     @property
@@ -435,6 +448,7 @@ class Vec3(Vector[T]):
 
 class Vec4(Vector[T]):
     """4次元ベクトルクラス"""
+
     @overload
     def __init__(
         self, x: Position[T], y: None = None, z: None = None, w: None = None
@@ -464,7 +478,7 @@ class Vec4(Vector[T]):
             super().__init__([x, y, z, w])  # type: ignore[arg-type]
 
     def _create(self, data: Sequence[Number]) -> "Vec4[float]":
-        """新しいVec4生成"""
+        """新規Vec4作成"""
         return Vec4[float](data[0], data[1], data[2], data[3])
 
     @property

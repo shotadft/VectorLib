@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "VecPosLib"
-version = "1.0.3.hf1"
+version = "1.0.3.pth1"
 description = "This is a library that enables vector calculations in Python."
 authors = [
   { name = "Shotadft", email = "98450322+shotadft@users.noreply.github.com" }

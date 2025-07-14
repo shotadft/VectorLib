@@ -36,7 +36,7 @@ else:
 
 setup(
     name="VecPosLib",
-    version="1.0.3.hf1",
+    version="1.0.3.pth1",
     description="This is a library that enables vector calculations in Python.",
     author="Shotadft",
     author_email="98450322+shotadft@users.noreply.github.com",

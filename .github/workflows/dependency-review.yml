@@ -10,20 +10,11 @@
 name: 'Dependency review'
 on:
   pull_request:
-    branches: [ "master" ]
     paths:
       - 'requirements.txt'
       - 'pyproject.toml'
       - 'setup.py'
-      - 'package/vecposlib/**/__init__.py'
-      - '.github/workflows/dependency-review.yml'
-    paths-ignore:
-      - '**.py'
-      - '**.md'
-      - 'docs/**'
-      - 'tests/**'
-      - 'venv/**'
-      - '.venv/**'
+      - '**.yml'
 
 defaults:
   run:

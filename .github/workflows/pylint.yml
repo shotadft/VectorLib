@@ -1,30 +1,19 @@
 name: Pylint
 
 on:
-  push:
-    branches: [ master, main ]
-    paths:
-      - '**.py'
-      - 'requirements.txt'
-      - 'pyproject.toml'
-      - 'setup.py'
-      - '.github/workflows/pylint.yml'
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'tests/**'
   pull_request:
-    branches: [ master, main ]
     paths:
       - '**.py'
       - 'requirements.txt'
       - 'pyproject.toml'
-      - 'setup.py'
-      - '.github/workflows/pylint.yml'
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'tests/**'
+      - '**.yml'
+  push:
+    branches: [ "master", "main" ]
+    paths:
+      - '**.py'
+      - 'requirements.txt'
+      - 'pyproject.toml'
+      - '**.yml'
 
 defaults:
   run:
@@ -50,9 +39,14 @@ jobs:
     - name: Install dependencies
       timeout-minutes: 10
       run: |
-        python -m pip install --upgrade pip build
-        python -m pip install --upgrade typing_extensions setuptools pylint -r requirements.txt
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade build typing_extensions setuptools pylint -r requirements.txt
     - name: Analysing the code with pylint
       timeout-minutes: 10
       run: |
-        pylint $(git ls-files '*.py')
+        pylint \
+          --output-format=colorized \
+          --reports=no \
+          --score=yes \
+          --max-line-length=100 \
+          $(git ls-files '*.py')

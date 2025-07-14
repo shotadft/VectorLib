@@ -183,5 +183,5 @@ class Position(Generic[T]):
     def __repr__(self) -> str:
         """文字列表現返却"""
         names = ["x", "y", "z", "w"]
-        coords = [f"{names[i]}={self._coords[i]}" for i in range(self._coords.size)]
+        coords = [f"{names[i]}={v}" for i, v in enumerate(self.to_list())]
         return f"{self.__class__.__name__}({', '.join(coords)})"

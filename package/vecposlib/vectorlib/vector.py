@@ -279,22 +279,21 @@ class Vector(Generic[T]):
 
     def _inv_coords(self) -> List[float]:
         """逆符号座標リスト返却"""
-        coords = [self._get_coord(i) for i in range(self.vec.size)]
+        coords = self.to_list()
         return _inv_coords(coords)
 
     def _refl_coords(self, normal: "Vector[T]") -> List[float]:
         """反射座標リスト返却"""
-        n_vec = normal.normalize()
-        n_coords = [n_vec[i] for i in range(self.vec.size)]
-        d = sum(self._get_coord(i) * n_coords[i] for i in range(self.vec.size))
-        coords = [self._get_coord(i) for i in range(self.vec.size)]
+        n_coords = normal.normalize().to_list()
+        coords = self.to_list()
+        d = sum(a * b for a, b in zip(coords, n_coords))
         return _refl_coords(coords, n_coords, d)
 
     def _proj_coords(self, other: "Vector[T]") -> List[float]:
         """射影座標リスト返却"""
-        n_vec = other.normalize()
-        n_coords = [n_vec[i] for i in range(self.vec.size)]
-        d = sum(self._get_coord(i) * n_coords[i] for i in range(self.vec.size))
+        n_coords = other.normalize().to_list()
+        coords = self.to_list()
+        d = sum(a * b for a, b in zip(coords, n_coords))
         return _proj_coords(n_coords, d)
 
     def _cast_val(self, value: float) -> T:

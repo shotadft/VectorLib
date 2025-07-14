@@ -1,5 +1,5 @@
 <h1 id="top" align="center">
-<img src="https://raw.githubusercontent.com/shotadft/VectorLib/master/.github/logo/VecPosLib-logo.svg" width="300" height="300" />
+<img src="https://raw.githubusercontent.com/shotadft/VectorLib/master/.github/logo/VecPosLib-logo.svg" width="300" height="300"/>
 </h1><br/>
 
 [![PyPI Downloads][pypi-shield]][pypi-url]
@@ -30,8 +30,8 @@ pip install vecposlib
 ## Usage
 ### vectorlib
 - **`Vector`**: 基本ベクトルクラス
-    - **`Vec2` `Vec3` `Vec4`**: n次元特化クラス
-        - `Position`オブジェクトでも初期化ができます
+    - **`Vec2` `Vec3` `Vec4`**: n次元特化クラス<br/>
+    `Position`オブジェクトでも初期化ができます
 ### positionlib
 - **`Position`**: 座標管理クラス
 

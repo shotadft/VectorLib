@@ -1,4 +1,8 @@
-# VecPosLib
+<h1 id="top" align="center">
+VecPosLib
+</h1><br/>
+
+[![PyPI Downloads][pypi-shield]][pypi-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
@@ -42,6 +46,8 @@ pip install vecposlib
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[pypi-shield]: https://img.shields.io/pypi/dm/VecPosLib.svg?label=PyPI%20downloads&style=for-the-badge
+[pypi-url]: https://pypi.org/project/VecPosLib/
 [forks-shield]: https://img.shields.io/github/forks/shotadft/VectorLib.svg?style=for-the-badge
 [forks-url]: https://github.com/shotadft/VectorLib/network/members
 [stars-shield]: https://img.shields.io/github/stars/shotadft/VectorLib.svg?style=for-the-badge
@@ -51,4 +57,4 @@ pip install vecposlib
 [license-shield]: https://img.shields.io/github/license/shotadft/VectorLib.svg?style=for-the-badge
 [license-url]: https://github.com/shotadft/VectorLib/blob/master/LICENSE.md
 [version-shield]: https://img.shields.io/badge/1.0.3-00c81b?label=version&style=for-the-badge
-[header-id]: #VecPosLib
+[header-id]: #top

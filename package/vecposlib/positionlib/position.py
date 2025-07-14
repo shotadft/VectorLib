@@ -117,7 +117,7 @@ class Position(Generic[T]):
     def _get_coord(self, index: int) -> T:
         """指定インデックスの座標値取得"""
         v = self._coords[index]
-        target_type: Final = int if self._is_int else float
+        target_type = int if self._is_int else float
         return cast(T, int(v) if target_type == int else float(v))
 
     @property
@@ -158,7 +158,7 @@ class Position(Generic[T]):
 
     def _cast_coords(self, coords: ArrayType) -> List[T]:
         """配列を型Tのリスト変換"""
-        target_type: Final = int if self._is_int else float
+        target_type = int if self._is_int else float
         return [cast(T, int(v) if target_type == int else float(v)) for v in coords]
 
     def to_list(self) -> List[T]:

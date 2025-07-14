@@ -107,17 +107,18 @@ class Vector(Generic[T]):
         if not 1 <= len(data) <= _MAX_VECTOR_LENGTH:
             raise ValueError(f"Vector length must be 1 to {_MAX_VECTOR_LENGTH}")
 
-        has_float: Final[bool] = any(isinstance(x, float) for x in data)
-        dtype: Final = float if has_float else int
-        arr: Final[ArrayType] = xp.array(data, dtype=dtype)
+        has_float = any(isinstance(x, float) for x in data)
+        dtype = float if has_float else int
+        arr = xp.array(data, dtype=dtype)
         arr.setflags(write=False)
-        is_int: Final[bool] = (
+        is_int = (
             getattr(arr, "dtype", None) is not None and arr.dtype.kind in _DEF_INT_KIND
         )
-        self._vec, self._locked, self._is_int = arr, True, is_int
+        self._vec, self.vec, self._locked, self._is_int = arr, arr, True, is_int
 
     @property
     def dimension(self) -> VectorDimension:
+        """次元数返却"""
         return cast(VectorDimension, self._vec.size)
 
     def _create(self, data: Sequence[Number]) -> "Vector[float]":
@@ -127,8 +128,8 @@ class Vector(Generic[T]):
     def _get_coord(self, index: int) -> T:
         """指定インデックスの座標値取得"""
         assert 0 <= index < self._vec.size, f"Coordinate index {index} out of range"
-        v: Final = self._vec[index]
-        target_type: Final = int if self._is_int else float
+        v = self._vec[index]
+        target_type = int if self._is_int else float
         return cast(T, int(v) if target_type == int else float(v))
 
     def _from_arr(self, arr: ArrayType) -> "Vector[float]":
@@ -152,7 +153,7 @@ class Vector(Generic[T]):
 
     def _cast_coords(self, coords: ArrayType) -> List[T]:
         """配列を型Tのリスト変換"""
-        target_type: Final = int if self._is_int else float
+        target_type = int if self._is_int else float
         return [cast(T, int(v) if target_type == int else float(v)) for v in coords]
 
     def to_list(self) -> List[T]:
@@ -169,7 +170,7 @@ class Vector(Generic[T]):
 
     def normalize(self) -> "Vector[float]":
         """正規化ベクトル返却"""
-        n: Final[float] = self.norm()
+        n = self.norm()
         if n == 0:
             raise ValueError("Cannot normalize zero vector")
         return self._from_arr(self._vec / n)
@@ -205,7 +206,7 @@ class Vector(Generic[T]):
     def __eq__(self, other: object) -> bool:
         """等価判定"""
         return (
-            False if not isinstance(other, Vector) else (self._vec == other._vec).all()
+            False if not isinstance(other, Vector) else (self.vec == other.vec).all()
         )
 
     def __mul__(self, scalar: Number) -> "Vector[float]":
@@ -250,16 +251,16 @@ class Vector(Generic[T]):
 
     def reflect(self, normal: "Vector[T]") -> "Vector[float]":
         """法線ベクトルで反射"""
-        s: Final = self.astype(float)
-        n: Final = normal.normalize()
-        d: Final = s.dot(n)
+        s = self.astype(float)
+        n = normal.normalize()
+        d = s.dot(n)
         return _refl_vec(s, n, d).normalize() * s.norm()
 
     def project(self, other: "Vector[T]") -> "Vector[float]":
         """他ベクトルへの射影"""
-        s: Final = self.astype(float)
-        n: Final = other.normalize()
-        d: Final = s.dot(n)
+        s = self.astype(float)
+        n = other.normalize()
+        d = s.dot(n)
         return _proj_vec(n, d)
 
     def angle_between(self, other: "Vector[T]") -> float:
@@ -268,37 +269,37 @@ class Vector(Generic[T]):
 
     def get_coordinate(self, name: CoordinateName) -> T:
         """座標名で値取得"""
-        coord_map: Final = {"x": 0, "y": 1, "z": 2, "w": 3}
+        coord_map = {"x": 0, "y": 1, "z": 2, "w": 3}
         if name not in coord_map:
             raise ValueError(f"Invalid coordinate name: {name}")
-        idx: Final = coord_map[name]
+        idx = coord_map[name]
         if idx >= self._vec.size:
             raise IndexError(f"Coordinate '{name}' is not defined for this dimension")
         return self._get_coord(idx)
 
     def _inv_coords(self) -> List[float]:
         """逆符号座標リスト返却"""
-        coords: Final = [self._get_coord(i) for i in range(self._vec.size)]
+        coords = [self._get_coord(i) for i in range(self.vec.size)]
         return _inv_coords(coords)
 
     def _refl_coords(self, normal: "Vector[T]") -> List[float]:
         """反射座標リスト返却"""
-        n_vec: Final = normal.normalize()
-        n_coords: Final = [n_vec[i] for i in range(self._vec.size)]
-        d: Final = sum(self._get_coord(i) * n_coords[i] for i in range(self._vec.size))
-        coords: Final = [self._get_coord(i) for i in range(self._vec.size)]
+        n_vec = normal.normalize()
+        n_coords = [n_vec[i] for i in range(self.vec.size)]
+        d = sum(self._get_coord(i) * n_coords[i] for i in range(self.vec.size))
+        coords = [self._get_coord(i) for i in range(self.vec.size)]
         return _refl_coords(coords, n_coords, d)
 
     def _proj_coords(self, other: "Vector[T]") -> List[float]:
         """射影座標リスト返却"""
-        n_vec: Final = other.normalize()
-        n_coords: Final = [n_vec[i] for i in range(self._vec.size)]
-        d: Final = sum(self._get_coord(i) * n_coords[i] for i in range(self._vec.size))
+        n_vec = other.normalize()
+        n_coords = [n_vec[i] for i in range(self.vec.size)]
+        d = sum(self._get_coord(i) * n_coords[i] for i in range(self.vec.size))
         return _proj_coords(n_coords, d)
 
     def _cast_val(self, value: float) -> T:
         """値を型Tに変換"""
-        target_type: Final = int if self._is_int else float
+        target_type = int if self._is_int else float
         return cast(T, int(value) if target_type == int else float(value))
 
 

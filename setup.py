@@ -1,6 +1,38 @@
 """パッケージセットアップスクリプト"""
 from setuptools import setup, find_packages
 
+exclude_patterns = [
+    "tests*",
+    "venv*",
+    "build*",
+    "dist*",
+    "*.egg-info*",
+    ".vscode*",
+    "__pycache__*",
+    ".mypy_cache*",
+    ".pytest_cache*",
+    ".coverage*",
+    ".tox*",
+    ".nox*",
+    "htmlcov*",
+    ".hypothesis*",
+    ".cache*",
+    ".ipynb_checkpoints*",
+    ".python-version*",
+    ".dmypy.json*",
+    "Thumbs.db*",
+    "Desktop.ini*",
+    "*.env*",
+    "*.local*",
+]
+
+import os
+if os.path.exists("README.md"):
+    with open("README.md", encoding="utf-8") as f:
+        long_description = f.read()
+else:
+    long_description = ""
+
 setup(
     name="VectorLib",
     version="1.0.2",
@@ -8,7 +40,7 @@ setup(
     author="Shotadft",
     author_email="98450322+shotadft@users.noreply.github.com",
     url="https://github.com/shotadft/VectorLib",
-    packages=find_packages(where="package", exclude=["tests*", "venv*", "build*", "dist*", "*.egg-info*", ".vscode*", "__pycache__*", ".mypy_cache*", ".pytest_cache*", ".coverage*", ".tox*", ".nox*", "htmlcov*", ".hypothesis*", ".cache*", ".ipynb_checkpoints*", ".python-version*", ".dmypy.json*", "Thumbs.db*", "Desktop.ini*", "*.env*", "*.local*"]),
+    packages=find_packages(where="package", exclude=exclude_patterns),
     package_data={
         "package": ["py.typed"],
     },
@@ -27,6 +59,6 @@ setup(
         "Typing :: Typed",
         "License :: OSI Approved :: MIT License",
     ],
-    long_description=open("README.md", encoding="utf-8").read() if __import__('os').path.exists("README.md") else "",
+    long_description=long_description,
     long_description_content_type="text/markdown",
 )

@@ -1,5 +1,5 @@
 <h1 id="top" align="center">
-<img src="https://raw.githubusercontent.com/shotadft/VecPosLib/master/.github/logo/VecPosLib-logo.svg" width="300" height="300"/>
+<img src="https://raw.githubusercontent.com/shotadft/VecPosLib/master/.github/logo/VecPosLib-logo.svg" width="300" height="300" alt="VecPosLib"/>
 </h1><br/>
 
 [![PyPI Downloads][pypi-shield]][pypi-url]

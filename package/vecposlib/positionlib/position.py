@@ -53,7 +53,7 @@ def _is_zero(arr: ArrayType) -> bool:
 
 
 class Position(Generic[T]):
-    """座標情報クラス（1～4次元対応）"""
+    """座標情報クラス"""
 
     def __init__(self, *args: T):
         """座標初期化"""
@@ -65,7 +65,7 @@ class Position(Generic[T]):
                     f"Argument {i} must be int or float, got {type(v).__name__}"
                 )
         dtype = float if any(isinstance(a, float) for a in args) else int
-        arr = xp.array(args, dtype=dtype)
+        arr: ArrayType = xp.array(args, dtype=dtype)
         arr.setflags(write=False)
         is_int = (
             getattr(arr, "dtype", None) is not None and arr.dtype.kind in _DEF_INT_KIND
@@ -75,7 +75,7 @@ class Position(Generic[T]):
         self._is_int: bool = is_int
 
     def __setattr__(self, name: str, value: object):
-        """属性設定（イミュータブル制御）"""
+        """属性設定"""
         if (
             hasattr(self, "_locked")
             and self._locked
@@ -102,7 +102,7 @@ class Position(Generic[T]):
 
     def __getitem__(self, key: Union[int, CoordinateName]) -> T:
         """インデックスまたは座標名で値取得"""
-        names: Tuple[CoordinateName, ...] = ("x", "y", "z", "w")
+        names: Tuple[CoordinateName, ...] = ('x', 'y', 'z', 'w')
         if isinstance(key, int):
             if key < 0 or key >= self._coords.size:
                 raise IndexError("Position index out of range")
@@ -155,7 +155,7 @@ class Position(Generic[T]):
 
     @property
     def dimension(self) -> VectorDimension:
-        """次元数（型安全）返却"""
+        """次元数返却"""
         return cast(VectorDimension, self._coords.size)
 
     def _cast_coords(self, coords: ArrayType) -> List[T]:
@@ -184,6 +184,6 @@ class Position(Generic[T]):
 
     def __repr__(self) -> str:
         """文字列表現返却"""
-        names = ["x", "y", "z", "w"]
+        names = ['x', 'y', 'z', 'w']
         coords = [f"{names[i]}={v}" for i, v in enumerate(self.to_list())]
         return f"{self.__class__.__name__}({', '.join(coords)})"

@@ -73,7 +73,7 @@ def _inv_coords(coords: Sequence[Number]) -> List[float]:
 @njit(cache=True, parallel=True, fastmath=True)
 def _norm_f(arr: ArrayType) -> float:
     s = 0.0
-    for i in prange(arr.size):  # pylint: disable=not-an-iterable
+    for i in prange(arr.size): # pylint: disable=not-an-iterable
         s += arr[i] * arr[i]
     return s**0.5
 
@@ -89,7 +89,7 @@ def _norm(arr: ArrayType) -> float:
 @njit(cache=True, parallel=True, fastmath=True)
 def _dot_f(a: ArrayType, b: ArrayType) -> float:
     s = 0.0
-    for i in prange(a.size):  # pylint: disable=not-an-iterable
+    for i in prange(a.size): # pylint: disable=not-an-iterable
         s += a[i] * b[i]
     return s
 
@@ -113,7 +113,7 @@ class Vector(Generic[T]):
 
         has_float = any(isinstance(x, float) for x in data)
         dtype = float if has_float else int
-        arr = xp.array(data, dtype=dtype)
+        arr: ArrayType = xp.array(data, dtype=dtype)
         arr.setflags(write=False)
         is_int = (
             getattr(arr, "dtype", None) is not None and arr.dtype.kind in _DEF_INT_KIND
@@ -141,7 +141,7 @@ class Vector(Generic[T]):
         return self._create(arr.tolist())
 
     def __setattr__(self, name: str, value: object):
-        """属性設定（イミュータブル制御）"""
+        """属性設定"""
         if (
             hasattr(self, "_locked")
             and self._locked
@@ -275,7 +275,7 @@ class Vector(Generic[T]):
 
     def get_coordinate(self, name: CoordinateName) -> T:
         """座標名で値取得"""
-        coord_map = {"x": 0, "y": 1, "z": 2, "w": 3}
+        coord_map = {'x': 0, 'y': 1, 'z': 2, 'w': 3}
         if name not in coord_map:
             raise ValueError(f"Invalid coordinate name: {name}")
         idx = coord_map[name]
@@ -308,12 +308,12 @@ class Vector(Generic[T]):
         return cast(T, int(value) if target_type == int else float(value))
 
     def get_vec(self) -> ArrayType:
-        """ベクトル内部配列（読み取り専用）を返却"""
+        """ベクトル内部配列の返却"""
         return self._vec
 
 
 class Vec2(Vector[T]):
-    """2次元ベクトルクラス"""
+    """二次元ベクトルクラス"""
 
     @overload
     def __init__(self, x: Position[T], y: None = None): ...
@@ -321,7 +321,7 @@ class Vec2(Vector[T]):
     def __init__(self, x: T, y: T): ...
 
     def __init__(self, x: Union[T, Position[T]], y: Optional[T] = None):
-        """2次元ベクトル初期化"""
+        """二次元ベクトル初期化"""
         if isinstance(x, Position):
             if len(x) != 2:
                 raise ValueError
@@ -338,12 +338,12 @@ class Vec2(Vector[T]):
     @property
     def x(self) -> T:
         """x座標値返却"""
-        return self.get_coordinate("x")
+        return self.get_coordinate('x')
 
     @property
     def y(self) -> T:
         """y座標値返却"""
-        return self.get_coordinate("y")
+        return self.get_coordinate('y')
 
     def cross(self, other: "Vec2[T]") -> T:
         """外積計算"""
@@ -359,22 +359,19 @@ class Vec2(Vector[T]):
 
     def inverse(self) -> "Vec2[float]":
         """逆ベクトル返却"""
-        inverse_coords: Final[List[float]] = self._inv_coords()
-        return Vec2[float](*inverse_coords)
+        return Vec2[float](*self._inv_coords())
 
     def reflect(self, normal: "Vec2[T]") -> "Vec2[float]":  # type: ignore[override]
         """法線で反射"""
-        reflection_coords: Final[List[float]] = self._refl_coords(normal)
-        return Vec2[float](*reflection_coords)
+        return Vec2[float](*self._refl_coords(normal))
 
     def project(self, other: "Vec2[T]") -> "Vec2[float]":  # type: ignore[override]
         """他ベクトルへの射影"""
-        projection_coords: Final[List[float]] = self._proj_coords(other)
-        return Vec2[float](*projection_coords)
+        return Vec2[float](*self._proj_coords(other))
 
 
 class Vec3(Vector[T]):
-    """3次元ベクトルクラス"""
+    """三次元ベクトルクラス"""
 
     @overload
     def __init__(self, x: Position[T], y: None = None, z: None = None): ...
@@ -383,13 +380,13 @@ class Vec3(Vector[T]):
     def __init__(
         self, x: Union[T, Position[T]], y: Optional[T] = None, z: Optional[T] = None
     ):
-        """3次元ベクトル初期化"""
+        """三次元ベクトル初期化"""
         if isinstance(x, Position):
             if len(x) != 3:
                 raise ValueError
             super().__init__(x)
         else:
-            missing: Final = [name for name, val in [("y", y), ("z", z)] if val is None]
+            missing: Final = [name for name, val in [('y', y), ('z', z)] if val is None]
             if missing:
                 raise TypeError(
                     f"{', '.join(missing)} must not be None when x is not Position"
@@ -403,17 +400,17 @@ class Vec3(Vector[T]):
     @property
     def x(self) -> T:
         """x座標値返却"""
-        return self.get_coordinate("x")
+        return self.get_coordinate('x')
 
     @property
     def y(self) -> T:
         """y座標値返却"""
-        return self.get_coordinate("y")
+        return self.get_coordinate('y')
 
     @property
     def z(self) -> T:
         """z座標値返却"""
-        return self.get_coordinate("z")
+        return self.get_coordinate('z')
 
     def cross(self, other: "Vec3[T]") -> "Vec3[float]":
         """外積計算"""
@@ -431,22 +428,19 @@ class Vec3(Vector[T]):
 
     def inverse(self) -> "Vec3[float]":
         """逆ベクトル返却"""
-        inverse_coords: Final[List[float]] = self._inv_coords()
-        return Vec3[float](*inverse_coords)
+        return Vec3[float](*self._inv_coords())
 
     def reflect(self, normal: "Vec3[T]") -> "Vec3[float]":  # type: ignore[override]
         """法線で反射"""
-        reflection_coords: Final[List[float]] = self._refl_coords(normal)
-        return Vec3[float](*reflection_coords)
+        return Vec3[float](*self._refl_coords(normal))
 
     def project(self, other: "Vec3[T]") -> "Vec3[float]":  # type: ignore[override]
         """他ベクトルへの射影"""
-        projection_coords: Final[List[float]] = self._proj_coords(other)
-        return Vec3[float](*projection_coords)
+        return Vec3[float](*self._proj_coords(other))
 
 
 class Vec4(Vector[T]):
-    """4次元ベクトルクラス"""
+    """四次元ベクトルクラス"""
 
     @overload
     def __init__(
@@ -461,14 +455,14 @@ class Vec4(Vector[T]):
         z: Optional[T] = None,
         w: Optional[T] = None,
     ):
-        """4次元ベクトル初期化"""
+        """四次元ベクトル初期化"""
         if isinstance(x, Position):
             if len(x) != 4:
                 raise ValueError
             super().__init__(x)
         else:
             missing: Final = [
-                name for name, val in [("y", y), ("z", z), ("w", w)] if val is None
+                name for name, val in [('y', y), ('z', z), ('w', w)] if val is None
             ]
             if missing:
                 raise TypeError(
@@ -483,37 +477,34 @@ class Vec4(Vector[T]):
     @property
     def x(self) -> T:
         """x座標値返却"""
-        return self.get_coordinate("x")
+        return self.get_coordinate('x')
 
     @property
     def y(self) -> T:
         """y座標値返却"""
-        return self.get_coordinate("y")
+        return self.get_coordinate('y')
 
     @property
     def z(self) -> T:
         """z座標値返却"""
-        return self.get_coordinate("z")
+        return self.get_coordinate('z')
 
     @property
     def w(self) -> T:
         """w座標値返却"""
-        return self.get_coordinate("w")
+        return self.get_coordinate('w')
 
     def inverse(self) -> "Vec4[float]":
         """逆ベクトル返却"""
-        inverse_coords: Final[List[float]] = self._inv_coords()
-        return Vec4[float](*inverse_coords)
+        return Vec4[float](*self._inv_coords())
 
     def reflect(self, normal: "Vec4[T]") -> "Vec4[float]":  # type: ignore[override]
         """法線で反射"""
-        reflection_coords: Final[List[float]] = self._refl_coords(normal)
-        return Vec4[float](*reflection_coords)
+        return Vec4[float](*self._refl_coords(normal))
 
     def project(self, other: "Vec4[T]") -> "Vec4[float]":  # type: ignore[override]
         """他ベクトルへの射影"""
-        projection_coords: Final[List[float]] = self._proj_coords(other)
-        return Vec4[float](*projection_coords)
+        return Vec4[float](*self._proj_coords(other))
 
     def angle(self, other: "Vec4[T]") -> float:
         """なす角計算"""

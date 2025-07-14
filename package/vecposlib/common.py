@@ -28,7 +28,7 @@ Number = Union[int, float]
 T = TypeVar("T", bound=Number)
 
 VectorDimension = Literal[1, 2, 3, 4]
-CoordinateName = Literal["x", "y", "z", "w"]
+CoordinateName = Literal['x', 'y', 'z', 'w']
 ArrayType = xp.ndarray
 
 # 定数

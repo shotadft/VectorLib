@@ -4,8 +4,9 @@
 from typing import Generic, Iterator, List, Tuple, Union, cast
 
 # サードパーティライブラリ
+from numba import njit
 
-# プロジェクト共通(サードパーティ含む)
+# プロジェクト共通
 from ..common import (
     T,
     ArrayType,
@@ -14,8 +15,6 @@ from ..common import (
     _USE_CUPY,
     xp,
 )
-
-from numba import njit
 
 # 定数
 _DEF_INT_KIND = ("i",)

@@ -15,8 +15,9 @@ from typing import (
 )
 
 # サードパーティライブラリ
+from numba import njit, prange
 
-# プロジェクト共通(サードパーティ含む)
+# プロジェクト共通
 from ..common import (
     T,
     ArrayType,
@@ -28,8 +29,6 @@ from ..common import (
     _USE_CUPY,
     xp,
 )
-
-from numba import njit, prange
 
 # ローカルモジュール
 from ..positionlib.position import Position

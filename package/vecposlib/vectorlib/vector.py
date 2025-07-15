@@ -104,7 +104,7 @@ class Vector(Generic[T]):
     """N次元ベクトルクラス"""
 
     def __init__(self, data: Union[Sequence[T], Position[T]]):
-        """ベクトル初期化"""
+        """Ndベクトル"""
         if isinstance(data, Position):
             data = data.to_tuple()
 
@@ -321,7 +321,7 @@ class Vec2(Vector[T]):
     def __init__(self, x: T, y: T): ...
 
     def __init__(self, x: Union[T, Position[T]], y: Optional[T] = None):
-        """二次元ベクトル初期化"""
+        """二次元ベクトル"""
         if isinstance(x, Position):
             if len(x) != 2:
                 raise ValueError
@@ -380,7 +380,7 @@ class Vec3(Vector[T]):
     def __init__(
         self, x: Union[T, Position[T]], y: Optional[T] = None, z: Optional[T] = None
     ):
-        """三次元ベクトル初期化"""
+        """三次元ベクトル"""
         if isinstance(x, Position):
             if len(x) != 3:
                 raise ValueError
@@ -455,7 +455,7 @@ class Vec4(Vector[T]):
         z: Optional[T] = None,
         w: Optional[T] = None,
     ):
-        """四次元ベクトル初期化"""
+        """四次元ベクトル"""
         if isinstance(x, Position):
             if len(x) != 4:
                 raise ValueError

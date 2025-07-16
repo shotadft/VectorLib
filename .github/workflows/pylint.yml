@@ -3,17 +3,19 @@ name: Pylint
 on:
   pull_request:
     paths:
-      - '**.py'
+      - 'package/**.py'
       - 'requirements.txt'
       - 'pyproject.toml'
       - '**.yml'
   push:
     branches: [ "master", "main" ]
     paths:
-      - '**.py'
+      - 'package/**.py'
       - 'requirements.txt'
       - 'pyproject.toml'
       - '**.yml'
+    paths-ignore: 
+      - 'tests/'
 
 defaults:
   run:

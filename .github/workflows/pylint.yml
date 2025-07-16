@@ -40,7 +40,7 @@ jobs:
       timeout-minutes: 10
       run: |
         python -m pip install --upgrade pip
-        python -m pip install --upgrade build typing_extensions setuptools pylint -r requirements.txt
+        python -m pip install --upgrade build typing_extensions setuptools matplotlib pylint -r requirements.txt
     - name: Analysing the code with pylint
       timeout-minutes: 10
       run: |

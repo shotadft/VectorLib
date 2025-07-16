@@ -71,6 +71,21 @@ def _dot(a: ArrayType, b: ArrayType) -> float:
     )
 
 
+def _refl_vec(incident: "Vector", normal: "Vector", dot_product: float) -> "Vector":
+    """Reflected vector"""
+    return incident - normal * 2 * dot_product
+
+
+def _proj_vec(normal: "Vector", dot_product: float) -> "Vector":
+    """Projected vector"""
+    return normal * dot_product
+
+
+def _acos(dot: float, norm1: float, norm2: float) -> float:
+    """Angle arccosine"""
+    return xp.acos(xp.clip((dot / (norm1 * norm2)), -1.0, 1.0))
+
+
 class Vector(Generic[T]):
     """N-dimensional vector"""
 
@@ -422,18 +437,3 @@ class Vec4(Vector[T]):
                     f"{', '.join(missing)} must not be None when x is not Position"
                 )
             super().__init__([x, y, z, w])  # type: ignore[arg-type]
-
-
-def _refl_vec(incident: "Vector", normal: "Vector", dot_product: float) -> "Vector":
-    """Reflected vector"""
-    return incident - normal * 2 * dot_product
-
-
-def _proj_vec(normal: "Vector", dot_product: float) -> "Vector":
-    """Projected vector"""
-    return normal * dot_product
-
-
-def _acos(dot: float, norm1: float, norm2: float) -> float:
-    """Angle arccosine"""
-    return xp.acos(xp.clip((dot / (norm1 * norm2)), -1.0, 1.0))

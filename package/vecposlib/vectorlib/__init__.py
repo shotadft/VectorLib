@@ -1,11 +1,11 @@
 """
-VecPosLib サブパッケージ
+VecPosLib subpackage
 
-- Vector: 汎用ベクトルクラス
-- Vec2, Vec3, Vec4: N次元特化ベクトルクラス
+- Vector: general vector class
+- Vec2, Vec3, Vec4: specialized N-dimensional vector classes
 """
 
-# ローカルモジュール
+# Local modules
 from .vector import Vector, Vec2, Vec3, Vec4
 
 __all__ = ["Vector", "Vec2", "Vec3", "Vec4"]

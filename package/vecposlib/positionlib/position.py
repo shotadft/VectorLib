@@ -1,12 +1,12 @@
-"""座標情報管理用モジュール"""
+# Module for managing coordinate information
 
-# 標準ライブラリ
+# Standard library
 from typing import Generic, Iterator, List, Tuple, Union, cast
 
-# サードパーティライブラリ
+# Third-party libraries
 from numba import njit
 
-# プロジェクト共通
+# Project common
 from ..common import (
     T,
     ArrayType,
@@ -16,47 +16,16 @@ from ..common import (
     xp,
 )
 
-# 定数
+# Constants
 _DEF_INT_KIND = ("i",)
 
 
-@njit(cache=True)
-def _norm_f(arr: ArrayType) -> float:
-    s = 0.0
-    for v in arr:
-        s += v * v
-    return s**0.5
-
-
-@njit(cache=True)
-def _is_zero_f(arr: ArrayType) -> bool:
-    for v in arr:
-        if v != 0:
-            return False
-    return True
-
-
-def _norm(arr: ArrayType) -> float:
-    return (
-        _norm_f(arr)
-        if not _USE_CUPY and hasattr(arr, "dtype")
-        else float((arr * arr).sum() ** 0.5)
-    )
-
-
-def _is_zero(arr: ArrayType) -> bool:
-    return (
-        _is_zero_f(arr)
-        if not _USE_CUPY and hasattr(arr, "dtype")
-        else bool((arr == 0).all())
-    )
-
-
 class Position(Generic[T]):
-    """座標情報クラス"""
+    """Position class."""
 
+    # --- Initialization ---
     def __init__(self, *args: T):
-        """座標初期化"""
+        """Initialize coordinates."""
         if not 1 <= len(args) <= 4:
             raise TypeError(f"Position takes 1 to 4 arguments, got {len(args)}")
         for i, v in enumerate(args):
@@ -74,8 +43,72 @@ class Position(Generic[T]):
         self._locked: bool = True
         self._is_int: bool = is_int
 
+    # --- Properties ---
+    @property
+    def ndim(self) -> int:
+        """Return dimension."""
+        return self._coords.size
+
+    @property
+    def dimension(self) -> VectorDimension:
+        """Return dimension."""
+        return cast(VectorDimension, self._coords.size)
+
+    @property
+    def x(self) -> T:
+        return self._get_coord(0)
+    @property
+    def y(self) -> T:
+        if self._coords.size <= 1:
+            raise IndexError("y is not defined for this dimension")
+        return self._get_coord(1)
+    @property
+    def z(self) -> T:
+        if self._coords.size <= 2:
+            raise IndexError("z is not defined for this dimension")
+        return self._get_coord(2)
+    @property
+    def w(self) -> T:
+        if self._coords.size <= 3:
+            raise IndexError("w is not defined for this dimension")
+        return self._get_coord(3)
+
+    # --- Internal helpers ---
+    def _target_type(self):
+        return int if self._is_int else float
+
+    def _cast(self, v):
+        t = self._target_type()
+        return cast(T, int(v) if t == int else float(v))
+
+    def _cast_coords(self, coords: ArrayType) -> List[T]:
+        return [self._cast(v) for v in coords]
+
+    def _validate_index(self, idx: int):
+        if idx < 0 or idx >= self._coords.size:
+            raise IndexError("Position index out of range")
+
+    def _get_coord(self, index: int) -> T:
+        v = self._coords[index]
+        return self._cast(v)
+
+    # --- Conversion ---
+    def to_list(self) -> List[T]:
+        return self._cast_coords(self._coords)
+
+    def to_tuple(self) -> Tuple[T, ...]:
+        return tuple(self._cast_coords(self._coords))
+
+    # --- Arithmetic operations ---
+    def normalize(self) -> "Position[float]":
+        norm = (self._coords * self._coords).sum() ** 0.5
+        if norm == 0:
+            raise ValueError("Cannot normalize zero vector")
+        return Position[float](*(self._coords / norm).tolist())
+
+    # --- Comparison and utility ---
     def __setattr__(self, name: str, value: object):
-        """属性設定"""
+        """Set attribute."""
         if (
             hasattr(self, "_locked")
             and self._locked
@@ -85,15 +118,15 @@ class Position(Generic[T]):
         super().__setattr__(name, value)
 
     def __len__(self) -> int:
-        """要素数返却"""
+        """Return number of elements."""
         return self._coords.size
 
     def __iter__(self) -> Iterator[T]:
-        """イテレータ返却"""
+        """Return iterator."""
         return iter(self._cast_coords(self._coords))
 
     def __eq__(self, other: object) -> bool:
-        """等価判定"""
+        """Check for equivalence."""
         return (
             False
             if not isinstance(other, Position)
@@ -101,11 +134,9 @@ class Position(Generic[T]):
         )
 
     def __getitem__(self, key: Union[int, CoordinateName]) -> T:
-        """インデックスまたは座標名で値取得"""
         names: Tuple[CoordinateName, ...] = ('x', 'y', 'z', 'w')
         if isinstance(key, int):
-            if key < 0 or key >= self._coords.size:
-                raise IndexError("Position index out of range")
+            self._validate_index(key)
             v = key
         elif isinstance(key, str):
             idx = names.index(key)
@@ -116,74 +147,10 @@ class Position(Generic[T]):
             raise TypeError(f"Invalid key type: {type(key).__name__}")
         return self._get_coord(v)
 
-    def _get_coord(self, index: int) -> T:
-        """指定インデックスの座標値取得"""
-        v = self._coords[index]
-        target_type = int if self._is_int else float
-        return cast(T, int(v) if target_type == int else float(v))
-
-    @property
-    def x(self) -> T:
-        """x座標(幅)値返却"""
-        return self._get_coord(0)
-
-    @property
-    def y(self) -> T:
-        """y座標(高さ)値返却"""
-        if self._coords.size <= 1:
-            raise IndexError("y is not defined for this dimension")
-        return self._get_coord(1)
-
-    @property
-    def z(self) -> T:
-        """z座標(深さ)値返却"""
-        if self._coords.size <= 2:
-            raise IndexError("z is not defined for this dimension")
-        return self._get_coord(2)
-
-    @property
-    def w(self) -> T:
-        """w座標(時間?)値返却"""
-        if self._coords.size <= 3:
-            raise IndexError("w is not defined for this dimension")
-        return self._get_coord(3)
-
-    @property
-    def ndim(self) -> int:
-        """次元数返却"""
-        return self._coords.size
-
-    @property
-    def dimension(self) -> VectorDimension:
-        """次元数返却"""
-        return cast(VectorDimension, self._coords.size)
-
-    def _cast_coords(self, coords: ArrayType) -> List[T]:
-        """配列を型Tのリスト変換"""
-        target_type = int if self._is_int else float
-        return [cast(T, int(v) if target_type == int else float(v)) for v in coords]
-
-    def to_list(self) -> List[T]:
-        """座標値リスト返却"""
-        return self._cast_coords(self._coords)
-
-    def to_tuple(self) -> Tuple[T, ...]:
-        """座標値タプル返却"""
-        return tuple(self._cast_coords(self._coords))
-
     def is_zero(self) -> bool:
-        """全要素ゼロ判定"""
-        return bool(_is_zero(self._coords))
-
-    def normalize(self) -> "Position[float]":
-        """正規化座標返却"""
-        norm = _norm(self._coords)
-        if norm == 0:
-            raise ValueError("Cannot normalize zero vector")
-        return Position[float](*(self._coords / norm).tolist())
+        return bool((self._coords == 0).all())
 
     def __repr__(self) -> str:
-        """文字列表現返却"""
         names = ['x', 'y', 'z', 'w']
         coords = [f"{names[i]}={v}" for i, v in enumerate(self.to_list())]
         return f"{self.__class__.__name__}({', '.join(coords)})"

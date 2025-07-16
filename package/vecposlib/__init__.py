@@ -1,11 +1,11 @@
 """
-VecPosLib パッケージ
+VecPosLib package
 
-- PositionLib: 位置ベクトルクラス
-- VectorLib: 汎用ベクトルクラス
+- positionlib: position vector module
+- vectorlib: general vector module
 """
 
-# ローカルモジュール
+# Local modules
 from . import positionlib, vectorlib
 
 __all__ = ["positionlib", "vectorlib"]

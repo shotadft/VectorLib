@@ -1,10 +1,10 @@
 """
-PositionLib サブパッケージ
+PositionLib subpackage
 
-- Position: 座標情報クラス
+- Position: position class
 """
 
-# ローカルモジュール
+# Local modules
 from .position import Position
 
 __all__ = ["Position"]

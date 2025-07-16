@@ -36,7 +36,7 @@ else:
 
 setup(
     name="VecPosLib",
-    version="1.0.3.post3",
+    version="1.0.4",
     description="This is a library that enables vector calculations in Python.",
     author="Shotadft",
     author_email="98450322+shotadft@users.noreply.github.com",
@@ -46,7 +46,7 @@ setup(
         "package": ["py.typed"],
     },
     include_package_data=True,
-    install_requires=["numpy>=2.2.0,<2.3", "numba>=0.61.2"],
+    install_requires=["numpy<2.3,>=2.2.0", "numba>=0.61.2"],
     extras_require={
         "cupy": ["cupy>=10.0"],
     },

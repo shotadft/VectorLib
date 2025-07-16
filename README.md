@@ -68,5 +68,5 @@ pip install vecposlib
 [issues-url]: https://github.com/shotadft/VecPosLib/issues
 [license-shield]: https://img.shields.io/github/license/shotadft/VecPosLib.svg?style=flat-square
 [license-url]: https://github.com/shotadft/VecPosLib/blob/master/LICENSE.md
-[version-shield]: https://img.shields.io/badge/1.0.3.post3-00c81b?label=version&style=flat-square
+[version-shield]: https://img.shields.io/badge/1.0.4-00c81b?label=version&style=flat-square
 [header-id]: #top

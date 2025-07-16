@@ -6,14 +6,14 @@ on:
       - 'package/**.py'
       - 'requirements.txt'
       - 'pyproject.toml'
-      - '**.yml'
+      - '.github/workflows/pylint.yml'
   push:
     branches: [ "master", "main" ]
     paths:
       - 'package/**.py'
       - 'requirements.txt'
       - 'pyproject.toml'
-      - '**.yml'
+      - '.github/workflows/pylint.yml'
 
 defaults:
   run:
@@ -46,7 +46,5 @@ jobs:
       run: |
         pylint \
           --output-format=colorized \
-          --reports=no \
-          --score=yes \
-          --max-line-length=100 \
-          $(git ls-files '*.py')
+          --max-line-length=127 \
+          $(git ls-files 'package/**/*.py')

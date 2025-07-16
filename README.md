@@ -1,5 +1,5 @@
 <h1 id="top" align="center">
-<img src=".github/logo/VecPosLib-logo.svg" type="image/svg+xml" width="300" height="300" alt="VecPosLib"/>
+<img src="https://raw.githubusercontent.com/shotadft/VecPosLib/master/.github/logo/VecPosLib-logo.svg" type="image/svg+xml" width="300" height="300" alt="VecPosLib"/>
 </h1><br/>
 
 <!-- Shield -->
@@ -67,6 +67,6 @@ pip install vecposlib
 [issues-shield]: https://img.shields.io/github/issues/shotadft/VecPosLib.svg?style=flat-square
 [issues-url]: https://github.com/shotadft/VecPosLib/issues
 [license-shield]: https://img.shields.io/github/license/shotadft/VecPosLib.svg?style=flat-square
-[license-url]: LICENSE.md
+[license-url]: https://github.com/shotadft/VecPosLib/blob/master/LICENSE.md
 [version-shield]: https://img.shields.io/badge/1.0.3.post3-00c81b?label=version&style=flat-square
 [header-id]: #top

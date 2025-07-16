@@ -73,8 +73,8 @@ def _inv_coords(coords: Sequence[Number]) -> List[float]:
 @njit(cache=True, parallel=True, fastmath=True)
 def _norm_f(arr: ArrayType) -> float:
     s = 0.0
-    for i in prange(arr.size): # pylint: disable=not-an-iterable
-        s += arr[i] * arr[i]
+    for I in prange(arr.size): # pylint: disable=not-an-iterable
+        s += arr[I] * arr[I]
     return s**0.5
 
 
@@ -89,8 +89,8 @@ def _norm(arr: ArrayType) -> float:
 @njit(cache=True, parallel=True, fastmath=True)
 def _dot_f(a: ArrayType, b: ArrayType) -> float:
     s = 0.0
-    for i in prange(a.size): # pylint: disable=not-an-iterable
-        s += a[i] * b[i]
+    for I in prange(a.size): # pylint: disable=not-an-iterable
+        s += a[I] * b[I]
     return s
 
 

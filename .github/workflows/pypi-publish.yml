@@ -40,11 +40,6 @@ jobs:
       - release-build
     permissions:
       id-token: write
-    environment:
-      name: pypi
-    timeout-minutes: 15
-    env:
-      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 
     steps:
       - name: Retrieve release distributions

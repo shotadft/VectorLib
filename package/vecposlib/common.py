@@ -1,4 +1,4 @@
-# Common definitions for VecPosLib
+"""Common definitions for VecPosLib"""
 
 # Standard library
 import sys

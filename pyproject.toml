@@ -5,17 +5,17 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "VecPosLib"
 version = "1.0.3.post3"
-description = "This is a library that enables vector calculations in Python."
+description = "Library for vector calculations in Python"
+readme = "README.md"
 authors = [
   { name = "Shotadft", email = "98450322+shotadft@users.noreply.github.com" }
 ]
-readme = "README.md"
+license = { file = "LICENSE.md" }
 requires-python = ">=3.13"
 dependencies = [
   "numpy>=2.2.0,<2.3",
   "numba>=0.61.2"
 ]
-license = {file = "LICENSE.md"}
 keywords = [
   "vector", "math", "numpy", "cupy", "numba", "linear algebra", "gpu", "coordinates", "scientific computing"
 ]
@@ -35,8 +35,11 @@ Issues = "https://github.com/shotadft/VecPosLib/issues"
 cupy = ["cupy"]
 
 [tool.setuptools]
-package-dir = {"" = "package"}
+package-dir = { "" = "package" }
 
 [tool.setuptools.packages.find]
 where = ["package"]
 include = ["vecposlib*"]
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = "too-many-public-methods"

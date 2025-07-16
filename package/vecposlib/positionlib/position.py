@@ -1,10 +1,9 @@
-# Module for managing coordinate information
+"""Position class for coordinates"""
 
 # Standard library
 from typing import Generic, Iterator, List, Tuple, Union, cast
 
 # Third-party libraries
-from numba import njit
 
 # Project common
 from ..common import (
@@ -12,7 +11,6 @@ from ..common import (
     ArrayType,
     CoordinateName,
     VectorDimension,
-    _USE_CUPY,
     xp,
 )
 
@@ -21,7 +19,7 @@ _DEF_INT_KIND = ("i",)
 
 
 class Position(Generic[T]):
-    """Position class."""
+    """Position class for coordinates"""
 
     # --- Initialization ---
     def __init__(self, *args: T):
@@ -56,51 +54,63 @@ class Position(Generic[T]):
 
     @property
     def x(self) -> T:
+        """x coordinate"""
         return self._get_coord(0)
     @property
     def y(self) -> T:
+        """y coordinate"""
         if self._coords.size <= 1:
             raise IndexError("y is not defined for this dimension")
         return self._get_coord(1)
     @property
     def z(self) -> T:
+        """z coordinate"""
         if self._coords.size <= 2:
             raise IndexError("z is not defined for this dimension")
         return self._get_coord(2)
     @property
     def w(self) -> T:
+        """w coordinate"""
         if self._coords.size <= 3:
             raise IndexError("w is not defined for this dimension")
         return self._get_coord(3)
 
     # --- Internal helpers ---
     def _target_type(self):
+        """Target type"""
         return int if self._is_int else float
 
     def _cast(self, v):
+        """Cast to target type"""
         t = self._target_type()
         return cast(T, int(v) if t == int else float(v))
 
     def _cast_coords(self, coords: ArrayType) -> List[T]:
+        """Cast array to list"""
         return [self._cast(v) for v in coords]
 
     def _validate_index(self, idx: int):
+        """Validate index range"""
         if idx < 0 or idx >= self._coords.size:
             raise IndexError("Position index out of range")
 
     def _get_coord(self, index: int) -> T:
+        """Coordinate by index"""
         v = self._coords[index]
         return self._cast(v)
 
     # --- Conversion ---
     def to_list(self) -> List[T]:
+        """Coordinates as list"""
         return self._cast_coords(self._coords)
 
     def to_tuple(self) -> Tuple[T, ...]:
+        """Coordinates as tuple"""
         return tuple(self._cast_coords(self._coords))
 
     # --- Arithmetic operations ---
     def normalize(self) -> "Position[float]":
+        """Normalized position"""
         norm = (self._coords * self._coords).sum() ** 0.5
         if norm == 0:
             raise ValueError("Cannot normalize zero vector")
@@ -148,9 +158,11 @@ class Position(Generic[T]):
         return self._get_coord(v)
 
     def is_zero(self) -> bool:
+        """All coordinates are zero"""
         return bool((self._coords == 0).all())
 
     def __repr__(self) -> str:
+        """String representation"""
         names = ['x', 'y', 'z', 'w']
         coords = [f"{names[i]}={v}" for i, v in enumerate(self.to_list())]
         return f"{self.__class__.__name__}({', '.join(coords)})"

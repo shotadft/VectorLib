@@ -1,3 +1,5 @@
+"""N-dimensional vector operations"""
+
 # Standard library
 from typing import (
     Final,
@@ -37,6 +39,7 @@ _DEF_INT_KIND = ("i",)
 
 @njit(cache=True, parallel=True, fastmath=True)
 def _norm_f(arr: ArrayType) -> float:
+    """Euclidean norm"""
     s = 0.0
     for i in prange(arr.size):  # pylint: disable=not-an-iterable
         s += arr[i] * arr[i]
@@ -44,6 +47,7 @@ def _norm_f(arr: ArrayType) -> float:
 
 
 def _norm(arr: ArrayType) -> float:
+    """Euclidean norm"""
     return (
         _norm_f(arr)
         if not _USE_CUPY and hasattr(arr, "dtype") and hasattr(arr, "sum")
@@ -53,6 +57,7 @@ def _norm(arr: ArrayType) -> float:
 
 @njit(cache=True, parallel=True, fastmath=True)
 def _dot_f(a: ArrayType, b: ArrayType) -> float:
+    """Dot product"""
     s = 0.0
     for i in prange(a.size):  # pylint: disable=not-an-iterable
         s += a[i] * b[i]
@@ -60,13 +65,14 @@ def _dot_f(a: ArrayType, b: ArrayType) -> float:
 
 
 def _dot(a: ArrayType, b: ArrayType) -> float:
+    """Dot product"""
     return (
         _dot_f(a, b) if not _USE_CUPY and hasattr(a, "dtype") else float((a * b).sum())
     )
 
 
 class Vector(Generic[T]):
-    """N-dimensional vector."""
+    """N-dimensional vector"""
 
     # --- Initialization ---
     def __init__(self, data: Union[Sequence[T], Position[T]]):
@@ -89,6 +95,7 @@ class Vector(Generic[T]):
     # --- Class methods ---
     @classmethod
     def from_seq(cls, data: Sequence[T]) -> "Vector[T]":
+        """Create vector from sequence"""
         return cls(data)
 
     # --- Properties ---
@@ -124,22 +131,22 @@ class Vector(Generic[T]):
 
     # --- Internal helpers ---
     def _create(self, data: Sequence[T]) -> "Vector[T]":
-        """Create new Vector."""
+        """New vector from sequence"""
         return self.__class__(data)
 
     def _get_coord(self, index: int) -> T:
-        """Get coordinate value at specified index."""
+        """Coordinate by index"""
         assert 0 <= index < self._vec.size, f"Coordinate index {index} out of range"
         v = self._vec[index]
         target_type = int if self._is_int else float
         return cast(T, int(v) if target_type == int else float(v))
 
     def _from_arr(self, arr: ArrayType) -> "Vector[T]":
-        """Generate new vector from array."""
+        """New vector from array"""
         return self._create(self._cast_coords(arr))
 
     def __setattr__(self, name: str, value: object):
-        """Set attribute."""
+        """Set attribute (immutable)"""
         if (
             hasattr(self, "_locked")
             and self._locked
@@ -149,43 +156,49 @@ class Vector(Generic[T]):
         super().__setattr__(name, value)
 
     def _target_type(self):
+        """Target type"""
         return int if self._is_int else float
 
     def _cast(self, v):
+        """Cast to target type"""
         t = self._target_type()
         return cast(T, int(v) if t == int else float(v))
 
     def _cast_coords(self, coords: ArrayType) -> List[T]:
+        """Cast array to list"""
         return [self._cast(v) for v in coords]
 
     def _cast_val(self, value: float) -> T:
-        """Convert value to type T."""
+        """Cast float to T"""
         target_type = int if self._is_int else float
         return cast(T, int(value) if target_type == int else float(value))
 
     def get_vec(self) -> ArrayType:
-        """Return internal array of the vector."""
+        """Internal array"""
         return self._vec
 
     def _inv_coords(self) -> List[float]:
+        """Inverse coordinates"""
         return (-self._vec).tolist()
 
     def _refl_coords(self, normal: "Vector[T]") -> List[float]:
+        """Reflected coordinates"""
         n = normal.normalize().get_vec()
         d = float((self._vec * n).sum())
         return (self._vec - n * d * 2).tolist()
 
     def _proj_coords(self, other: "Vector[T]") -> List[float]:
+        """Projected coordinates"""
         n = other.normalize().get_vec()
         d = float((self._vec * n).sum())
         return (n * d).tolist()
 
     def _norm(self, arr: ArrayType) -> float:
-        """Return norm."""
+        """Norm of array"""
         return _norm(arr)
 
     def _dot(self, a: ArrayType, b: ArrayType) -> float:
-        """Calculate dot product."""
+        """Dot of arrays"""
         return _dot(a, b)
 
     # --- Conversion ---
@@ -502,12 +515,15 @@ class Vec4(Vector[T]):
 
 
 def _refl_vec(incident: "Vector", normal: "Vector", dot_product: float) -> "Vector":
+    """Reflected vector"""
     return incident - normal * 2 * dot_product
 
 
 def _proj_vec(normal: "Vector", dot_product: float) -> "Vector":
+    """Projected vector"""
     return normal * dot_product
 
 
 def _acos(dot: float, norm1: float, norm2: float) -> float:
+    """Angle arccosine"""
     return xp.acos(xp.clip((dot / (norm1 * norm2)), -1.0, 1.0))

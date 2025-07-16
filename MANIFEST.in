@@ -1,12 +1,17 @@
-include package/py.typed
-include package/__init__.py
+# Include essential metadata
 include README.md
+include LICENSE.md
 
-# Exclude tests directory
+# Include type hints
+include package/vecposlib/py.typed
+
+# Include all package source files
+recursive-include package/vecposlib *
+recursive-include .github/logo *
+
+# Exclude common unwanted files and directories
+exclude .github/*
 exclude tests/
-exclude tests/*
-
-# Exclude directories from .gitignore
 exclude venv/
 exclude build/
 exclude dist/

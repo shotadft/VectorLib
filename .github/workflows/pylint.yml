@@ -14,8 +14,6 @@ on:
       - 'requirements.txt'
       - 'pyproject.toml'
       - '**.yml'
-    paths-ignore: 
-      - 'tests/'
 
 defaults:
   run:

@@ -1,5 +1,5 @@
 <h1 id="top" align="center">
-<img src="https://raw.githubusercontent.com/shotadft/VecPosLib/refs/heads/master/.github/logo/VecPosLib-logo.svg" type="image/svg+xml" width="300" height="300" alt="VecPosLib"/>
+<img src=".github/logo/VecPosLib-logo.svg" type="image/svg+xml" width="300" height="300" alt="VecPosLib"/>
 </h1><br/>
 
 [![PyPI Downloads][pypi-shield]][pypi-url]
@@ -29,16 +29,18 @@ pip install vecposlib
 
 ## Usage
 ### vectorlib
-- **`Vector`**: 基本ベクトルクラス
-    - **`Vec2` `Vec3` `Vec4`**: n次元特化クラス<br/>
-    `Position`オブジェクトでも初期化ができます
+- **`Vector`**: **基本的な汎用ベクトル演算クラス**<br/>
+                ***Basic vector operation class***
+- **`Vec2` `Vec3` `Vec4`**: **`Vector`から派生したN次元の処理に特化したクラス**<br/>
+                            ***Class specialized in N dimensions***
+
 ### positionlib
-- **`Position`**: 座標管理クラス
+- **`Position`**: **座標管理を補助するクラス**<br/>
+                ***Classes that assist with coordinate management***
 
 ## Features
-- 型安全な2次元・3次元・4次元ベクトルクラス（Vec2, Vec3, Vec4）
 - 座標管理が楽
-- 安全なベクトル操作
+- 簡単なベクトル操作
 - 距離・ノルム・正規化・内積・外積・射影・反射などの基本演算をサポート
 - シンプルで直感的なAPI
 
@@ -58,5 +60,5 @@ pip install vecposlib
 [issues-url]: https://github.com/shotadft/VecPosLib/issues
 [license-shield]: https://img.shields.io/github/license/shotadft/VecPosLib.svg?style=for-the-badge
 [license-url]: https://github.com/shotadft/VecPosLib/blob/master/LICENSE.md
-[version-shield]: https://img.shields.io/badge/1.0.3.post2-00c81b?label=version&style=for-the-badge
+[version-shield]: https://img.shields.io/badge/1.0.3.post3-00c81b?label=version&style=for-the-badge
 [header-id]: #top

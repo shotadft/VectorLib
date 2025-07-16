@@ -2,6 +2,7 @@
 <img src=".github/logo/VecPosLib-logo.svg" type="image/svg+xml" width="300" height="300" alt="VecPosLib"/>
 </h1><br/>
 
+<!-- Shield -->
 [![PyPI Downloads][pypi-shield]][pypi-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -38,27 +39,34 @@ pip install vecposlib
 - **`Position`**: **座標管理を補助するクラス**<br/>
                 ***Classes that assist with coordinate management***
 
-## Features
-- 座標管理が楽
-- 簡単なベクトル操作
+## Features (JP)
+- 座標管理がちょっと楽になる
+- 簡単なベクトル操作が可能
 - 距離・ノルム・正規化・内積・外積・射影・反射などの基本演算をサポート
 - シンプルで直感的なAPI
 
+## Features (EN)
+- Coordinate management becomes a little easier
+- Simple vector operations are possible
+- Supports basic operations such as distance, norm, normalization, inner product, outer product, projection, and reflection
+- Simple and intuitive API
+
 ## Author Links
 - [Twitter](https://x.com/shotadft)
-- [My HP](https://www.shotadft.com/)
+- [GitHub](https://github.com/shotadft)
+- [Homepage](https://www.shotadft.com/)
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[pypi-shield]: https://img.shields.io/pypi/dm/VecPosLib.svg?label=PyPI%20downloads&style=for-the-badge
+[pypi-shield]: https://img.shields.io/pypi/dm/VecPosLib.svg?label=PyPI%20downloads&style=flat-square
 [pypi-url]: https://pypi.org/project/VecPosLib/
-[forks-shield]: https://img.shields.io/github/forks/shotadft/VecPosLib.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/shotadft/VecPosLib.svg?style=flat-square
 [forks-url]: https://github.com/shotadft/VecPosLib/network/members
-[stars-shield]: https://img.shields.io/github/stars/shotadft/VecPosLib.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/shotadft/VecPosLib.svg?style=flat-square
 [stars-url]: https://github.com/shotadft/VecPosLib/stargazers
-[issues-shield]: https://img.shields.io/github/issues/shotadft/VecPosLib.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/shotadft/VecPosLib.svg?style=flat-square
 [issues-url]: https://github.com/shotadft/VecPosLib/issues
-[license-shield]: https://img.shields.io/github/license/shotadft/VecPosLib.svg?style=for-the-badge
-[license-url]: https://github.com/shotadft/VecPosLib/blob/master/LICENSE.md
-[version-shield]: https://img.shields.io/badge/1.0.3.post3-00c81b?label=version&style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/shotadft/VecPosLib.svg?style=flat-square
+[license-url]: LICENSE.md
+[version-shield]: https://img.shields.io/badge/1.0.3.post3-00c81b?label=version&style=flat-square
 [header-id]: #top

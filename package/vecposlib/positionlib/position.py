@@ -56,18 +56,21 @@ class Position(Generic[T]):
     def x(self) -> T:
         """x coordinate"""
         return self._get_coord(0)
+
     @property
     def y(self) -> T:
         """y coordinate"""
         if self._coords.size <= 1:
             raise IndexError("y is not defined for this dimension")
         return self._get_coord(1)
+
     @property
     def z(self) -> T:
         """z coordinate"""
         if self._coords.size <= 2:
             raise IndexError("z is not defined for this dimension")
         return self._get_coord(2)
+
     @property
     def w(self) -> T:
         """w coordinate"""
@@ -81,8 +84,10 @@ class Position(Generic[T]):
         return int if self._is_int else float
 
     def _cast(self, v):
-        """Cast to target type"""
+        """Cast to target type (int/float only)"""
         t = self._target_type()
+        if t not in (int, float):
+            raise TypeError(f"Unsupported type for Position: {t}")
         return cast(T, int(v) if t == int else float(v))
 
     def _cast_coords(self, coords: ArrayType) -> List[T]:
@@ -144,7 +149,7 @@ class Position(Generic[T]):
         )
 
     def __getitem__(self, key: Union[int, CoordinateName]) -> T:
-        names: Tuple[CoordinateName, ...] = ('x', 'y', 'z', 'w')
+        names: Tuple[CoordinateName, ...] = ("x", "y", "z", "w")
         if isinstance(key, int):
             self._validate_index(key)
             v = key
@@ -163,6 +168,6 @@ class Position(Generic[T]):
 
     def __repr__(self) -> str:
         """String representation"""
-        names = ['x', 'y', 'z', 'w']
+        names = ["x", "y", "z", "w"]
         coords = [f"{names[i]}={v}" for i, v in enumerate(self.to_list())]
         return f"{self.__class__.__name__}({', '.join(coords)})"

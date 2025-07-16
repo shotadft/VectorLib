@@ -17,6 +17,7 @@ try:
         raise ImportError
 except ImportError:
     import numpy as xp  # type: ignore[import-untyped]
+
     _USE_CUPY = False
 
 # Type definitions
@@ -24,7 +25,7 @@ Number = Union[int, float]
 T = TypeVar("T", bound=Number)
 
 VectorDimension = Literal[1, 2, 3, 4]
-CoordinateName = Literal['x', 'y', 'z', 'w']
+CoordinateName = Literal["x", "y", "z", "w"]
 ArrayType = xp.ndarray
 
 # Constants

@@ -160,8 +160,10 @@ class Vector(Generic[T]):
         return int if self._is_int else float
 
     def _cast(self, v):
-        """Cast to target type"""
+        """Cast to target type (int/float only)"""
         t = self._target_type()
+        if t not in (int, float):
+            raise TypeError(f"Unsupported type for Vector: {t}")
         return cast(T, int(v) if t == int else float(v))
 
     def _cast_coords(self, coords: ArrayType) -> List[T]:
@@ -169,8 +171,10 @@ class Vector(Generic[T]):
         return [self._cast(v) for v in coords]
 
     def _cast_val(self, value: float) -> T:
-        """Cast float to T"""
+        """Cast float to T (int/float only)"""
         target_type = int if self._is_int else float
+        if target_type not in (int, float):
+            raise TypeError(f"Unsupported type for Vector: {target_type}")
         return cast(T, int(value) if target_type == int else float(value))
 
     def get_vec(self) -> ArrayType:
@@ -349,35 +353,10 @@ class Vec2(Vector[T]):
                 raise TypeError("y must not be None when x is not Position")
             super().__init__([x, y])
 
-    @property
-    def x(self) -> T:
-        """x coordinate (width) value."""
-        return self.get_coordinate("x")
-
-    @property
-    def y(self) -> T:
-        """y coordinate (height) value."""
-        return self.get_coordinate("y")
-
     def cross(self, other: "Vec2[T]") -> T:
         """Calculate cross product."""
         result: Final = self.x * other.y - self.y * other.x
         return self._cast_val(result)
-
-    def angle(self, other: "Vec2[T]") -> float:
-        """Calculate angle."""
-        dot: Final = self.x * other.x + self.y * other.y
-        norm1: Final = xp.sqrt(self.x**2 + self.y**2)
-        norm2: Final = xp.sqrt(other.x**2 + other.y**2)
-        return _acos(dot, norm1, norm2)
-
-    def reflect(self, normal: "Vec2[T]") -> "Vec2[float]":  # type: ignore[override]
-        """Reflect by normal."""
-        return Vec2[float](*self._refl_coords(normal))
-
-    def project(self, other: "Vec2[T]") -> "Vec2[float]":  # type: ignore[override]
-        """Project onto another vector."""
-        return Vec2[float](*self._proj_coords(other))
 
 
 # --- Vec3 ---
@@ -404,44 +383,12 @@ class Vec3(Vector[T]):
                 )
             super().__init__([x, y, z])  # type: ignore[arg-type]
 
-    # Vec2, Vec3, Vec4 から from_seq, x, y, z, w, inverse など親クラスと重複する関数を削除
-
-    @property
-    def x(self) -> T:
-        """x coordinate (width) value."""
-        return self.get_coordinate("x")
-
-    @property
-    def y(self) -> T:
-        """y coordinate (height) value."""
-        return self.get_coordinate("y")
-
-    @property
-    def z(self) -> T:
-        """z coordinate (depth) value."""
-        return self.get_coordinate("z")
-
     def cross(self, other: "Vec3[T]") -> "Vec3[float]":
         """Calculate cross product."""
         cx: Final[float] = self.y * other.z - self.z * other.y
         cy: Final[float] = self.z * other.x - self.x * other.z
         cz: Final[float] = self.x * other.y - self.y * other.x
         return Vec3[float](cx, cy, cz)
-
-    def angle(self, other: "Vec3[T]") -> float:
-        """Calculate angle."""
-        dot: Final = self.x * other.x + self.y * other.y + self.z * other.z
-        norm1: Final = xp.sqrt(self.x**2 + self.y**2 + self.z**2)
-        norm2: Final = xp.sqrt(other.x**2 + other.y**2 + other.z**2)
-        return _acos(dot, norm1, norm2)
-
-    def reflect(self, normal: "Vec3[T]") -> "Vec3[float]":  # type: ignore[override]
-        """Reflect by normal."""
-        return Vec3[float](*self._refl_coords(normal))
-
-    def project(self, other: "Vec3[T]") -> "Vec3[float]":  # type: ignore[override]
-        """Project onto another vector."""
-        return Vec3[float](*self._proj_coords(other))
 
 
 # --- Vec4 ---
@@ -475,43 +422,6 @@ class Vec4(Vector[T]):
                     f"{', '.join(missing)} must not be None when x is not Position"
                 )
             super().__init__([x, y, z, w])  # type: ignore[arg-type]
-
-    @property
-    def x(self) -> T:
-        """x coordinate (width) value."""
-        return self.get_coordinate("x")
-
-    @property
-    def y(self) -> T:
-        """y coordinate (height) value."""
-        return self.get_coordinate("y")
-
-    @property
-    def z(self) -> T:
-        """z coordinate (depth) value."""
-        return self.get_coordinate("z")
-
-    @property
-    def w(self) -> T:
-        """w coordinate (time?) value."""
-        return self.get_coordinate("w")
-
-    def reflect(self, normal: "Vec4[T]") -> "Vec4[float]":  # type: ignore[override]
-        """Reflect by normal."""
-        return Vec4[float](*self._refl_coords(normal))
-
-    def project(self, other: "Vec4[T]") -> "Vec4[float]":  # type: ignore[override]
-        """Project onto another vector."""
-        return Vec4[float](*self._proj_coords(other))
-
-    def angle(self, other: "Vec4[T]") -> float:
-        """Calculate angle."""
-        dot: Final = (
-            self.x * other.x + self.y * other.y + self.z * other.z + self.w * other.w
-        )
-        norm1: Final = xp.sqrt(self.x**2 + self.y**2 + self.z**2 + self.w**2)
-        norm2: Final = xp.sqrt(other.x**2 + other.y**2 + other.z**2 + other.w**2)
-        return _acos(dot, norm1, norm2)
 
 
 def _refl_vec(incident: "Vector", normal: "Vector", dot_product: float) -> "Vector":

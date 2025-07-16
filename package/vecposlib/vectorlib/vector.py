@@ -104,7 +104,7 @@ class Vector(Generic[T]):
     """N次元ベクトルクラス"""
 
     def __init__(self, data: Union[Sequence[T], Position[T]]):
-        """Ndベクトル"""
+        """N次元ベクトル"""
         if isinstance(data, Position):
             data = data.to_tuple()
 
@@ -126,7 +126,7 @@ class Vector(Generic[T]):
         return cast(VectorDimension, self._vec.size)
 
     def _create(self, data: Sequence[Number]) -> "Vector[float]":
-        """新規Vector生成"""
+        """新規Vector作成"""
         return Vector[float](data)
 
     def _get_coord(self, index: int) -> T:
@@ -332,17 +332,17 @@ class Vec2(Vector[T]):
             super().__init__([x, y])
 
     def _create(self, data: Sequence[Number]) -> "Vec2[float]":
-        """新規Vec2生成"""
+        """新規Vec2作成"""
         return Vec2[float](data[0], data[1])
 
     @property
     def x(self) -> T:
-        """x座標値返却"""
+        """x座標(幅)値返却"""
         return self.get_coordinate('x')
 
     @property
     def y(self) -> T:
-        """y座標値返却"""
+        """y座標(高さ)値返却"""
         return self.get_coordinate('y')
 
     def cross(self, other: "Vec2[T]") -> T:
@@ -394,22 +394,22 @@ class Vec3(Vector[T]):
             super().__init__([x, y, z])  # type: ignore[arg-type]
 
     def _create(self, data: Sequence[Number]) -> "Vec3[float]":
-        """新規Vec3生成"""
+        """新規Vec3作成"""
         return Vec3[float](data[0], data[1], data[2])
 
     @property
     def x(self) -> T:
-        """x座標値返却"""
+        """x座標(幅)値返却"""
         return self.get_coordinate('x')
 
     @property
     def y(self) -> T:
-        """y座標値返却"""
+        """y座標(高さ)値返却"""
         return self.get_coordinate('y')
 
     @property
     def z(self) -> T:
-        """z座標値返却"""
+        """z座標(深さ)値返却"""
         return self.get_coordinate('z')
 
     def cross(self, other: "Vec3[T]") -> "Vec3[float]":
@@ -476,22 +476,22 @@ class Vec4(Vector[T]):
 
     @property
     def x(self) -> T:
-        """x座標値返却"""
+        """x座標(幅)値返却"""
         return self.get_coordinate('x')
 
     @property
     def y(self) -> T:
-        """y座標値返却"""
+        """y座標(高さ)値返却"""
         return self.get_coordinate('y')
 
     @property
     def z(self) -> T:
-        """z座標値返却"""
+        """z座標(深さ)値返却"""
         return self.get_coordinate('z')
 
     @property
     def w(self) -> T:
-        """w座標値返却"""
+        """w座標(時間?)値返却"""
         return self.get_coordinate('w')
 
     def inverse(self) -> "Vec4[float]":

@@ -124,26 +124,26 @@ class Position(Generic[T]):
 
     @property
     def x(self) -> T:
-        """x座標値返却"""
+        """x座標(幅)値返却"""
         return self._get_coord(0)
 
     @property
     def y(self) -> T:
-        """y座標値返却"""
+        """y座標(高さ)値返却"""
         if self._coords.size <= 1:
             raise IndexError("y is not defined for this dimension")
         return self._get_coord(1)
 
     @property
     def z(self) -> T:
-        """z座標値返却"""
+        """z座標(深さ)値返却"""
         if self._coords.size <= 2:
             raise IndexError("z is not defined for this dimension")
         return self._get_coord(2)
 
     @property
     def w(self) -> T:
-        """w座標値返却"""
+        """w座標(時間?)値返却"""
         if self._coords.size <= 3:
             raise IndexError("w is not defined for this dimension")
         return self._get_coord(3)
